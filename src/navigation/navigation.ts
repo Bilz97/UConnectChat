@@ -1,5 +1,16 @@
-type RootStackParamList = {
-  Login: undefined; // undefined because you aren't passing any params to the home screen
-  Home: undefined;
-  Settings: undefined;
-};
+import { type NavigatorScreenParams } from '@react-navigation/native'
+// CompositeScreenProps?
+
+export type RootStack = {
+  Auth: NavigatorScreenParams<AuthStack>
+  App: NavigatorScreenParams<AppTabStack>
+}
+
+export type AppTabStack = {
+  Home: undefined
+  Settings: undefined
+}
+
+export type AuthStack = {
+  Login: undefined
+}
