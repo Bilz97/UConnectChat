@@ -4,7 +4,8 @@ import * as React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StackNavigationProp } from "@react-navigation/stack";
-type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, "Home">;
+import { AppTabStack } from "../navigation/navigation";
+type HomeScreenNavigationProp = StackNavigationProp<AppTabStack, "Home">;
 
 const HomeScreen = ({
   navigation,

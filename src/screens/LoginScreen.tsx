@@ -3,11 +3,9 @@ import { TextInput, Button } from "react-native";
 import * as React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { AuthStack, RootStack } from "../navigation/navigation";
 
-type LoginScreenNavigationProp = StackNavigationProp<
-  RootStackParamList,
-  "Login"
->;
+type LoginScreenNavigationProp = StackNavigationProp<AuthStack, "Login">;
 
 const LoginScreen = ({
   navigation,
@@ -23,7 +21,9 @@ const LoginScreen = ({
           <TextInput></TextInput>
           <Button
             title="go to next screen"
-            onPress={() => navigation.navigate("Home")}
+            onPress={() =>
+              navigation.getParent()?.navigate("App", { screen: "Home" })
+            }
           />
         </View>
       </View>
