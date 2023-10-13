@@ -19,6 +19,8 @@
     "@typescript-eslint/consistent-type-definitions": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/space-before-function-paren": "off",
+    "@typescript-eslint/member-delimiter-style": "off",
+    "@typescript-eslint/comma-dangle": "off",
     // this is for sorting WITHIN an import
     "sort-imports": ["error", { "ignoreCase": true, "ignoreDeclarationSort": true }],
     // this is for sorting imports

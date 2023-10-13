@@ -5,8 +5,8 @@ import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { type AppTabStack, type AuthStack, type RootStack } from './src/navigation/navigation'
+import LoginScreen from './src/screens/AuthScreen'
 import HomeScreen from './src/screens/HomeScreen'
-import LoginScreen from './src/screens/LoginScreen'
 import SettingsScreen from './src/screens/SettingsScreen'
 
 export default function App() {
