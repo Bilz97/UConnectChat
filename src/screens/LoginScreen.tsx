@@ -1,34 +1,29 @@
-import { View, Text } from "react-native";
-import { TextInput, Button } from "react-native";
-import * as React from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { AuthStack, RootStack } from "../navigation/navigation";
+import * as React from 'react'
+import { Button, Text, TextInput, View } from 'react-native'
 
-type LoginScreenNavigationProp = StackNavigationProp<AuthStack, "Login">;
+import { type StackNavigationProp } from '@react-navigation/stack'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
-const LoginScreen = ({
-  navigation,
-}: {
-  navigation: LoginScreenNavigationProp;
-}) => {
+import { type AuthStack } from '../navigation/navigation'
+
+type LoginScreenNavigationProp = StackNavigationProp<AuthStack, 'Login'>
+
+const LoginScreen = ({ navigation }: { navigation: LoginScreenNavigationProp }) => {
   return (
     <SafeAreaView className="flex-1 bg-gray-200">
-      <View className={"flex-1 items-center"}>
-        <Text>{"This is the future login screen"}</Text>
-        <View className={"justify-center h-80 w-80"}>
-          <Text>{"Enter username"}</Text>
+      <View className={'flex-1 items-center'}>
+        <Text>{'This is the future login screen'}</Text>
+        <View className={'justify-center h-80 w-80'}>
+          <Text>{'Enter username'}</Text>
           <TextInput></TextInput>
           <Button
             title="go to next screen"
-            onPress={() =>
-              navigation.getParent()?.navigate("App", { screen: "Home" })
-            }
+            onPress={() => navigation.getParent()?.navigate('App', { screen: 'Home' })}
           />
         </View>
       </View>
     </SafeAreaView>
-  );
-};
+  )
+}
 
-export default LoginScreen;
+export default LoginScreen
