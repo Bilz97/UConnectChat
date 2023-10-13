@@ -1,28 +1,44 @@
 import * as React from 'react'
-import { Button, Text, TextInput, View } from 'react-native'
+import { SafeAreaView, TextInput, View } from 'react-native'
 
+import { EvilIcons } from '@expo/vector-icons'
 import { type StackNavigationProp } from '@react-navigation/stack'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { useFormik } from 'formik'
 
 import { type AppTabStack } from '../navigation/navigation'
+
 type HomeScreenNavigationProp = StackNavigationProp<AppTabStack, 'Home'>
 
 const HomeScreen = ({ navigation }: { navigation: HomeScreenNavigationProp }) => {
-  return (
-    <SafeAreaView className="flex-1 bg-gray-200">
-      <View className={'flex-1 items-center'}>
-        <Text>{'This is the future home screen'}</Text>
-        <View className={'justify-center h-80 w-80'}>
-          <Text>{'Enter username'}</Text>
-          <TextInput></TextInput>
-          <Button
-            title="go to next screen"
-            onPress={() => {
-              navigation.navigate('Settings')
-            }}
-          />
+  const { values, handleChange } = useFormik({
+    initialValues: {
+      search: '',
+    },
+    onSubmit: (value) => {
+      console.log('*** search: ', value)
+    },
+  })
+
+  const SearchBar = () => {
+    return (
+      <View className="flex-row items-center border rounded-sm border-gray-700 bg-white">
+        <TextInput
+          maxLength={20}
+          className="px-2 bg-gray-50 h-12 flex-1 bg-transparent"
+          placeholder={'search for friends'}
+          onChangeText={handleChange('search')}
+          value={values.search}
+        />
+        <View className="p-2">
+          <EvilIcons name="search" size={28} color="gray" />
         </View>
       </View>
+    )
+  }
+
+  return (
+    <SafeAreaView className="flex-1 m-5">
+      <View className={'flex-1'}>{SearchBar()}</View>
     </SafeAreaView>
   )
 }

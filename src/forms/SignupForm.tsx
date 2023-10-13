@@ -43,9 +43,9 @@ const SignupForm = ({
   })
 
   return (
-    <View className="bg-gray-200 p-5 rounded-md border border-gray-300">
+    <View className="bg-gray-200 p-5 rounded-md border border-gray-300 w-full items-center">
       <Text className="text-gray-700 text-xl font-bold self-center mb-5">{'Sign up'}</Text>
-      <View className={'w-80 border-gray-300'}>
+      <View className="w-full">
         <UInputField
           labelTitle={'First name'}
           placeholder={'Enter first name'}

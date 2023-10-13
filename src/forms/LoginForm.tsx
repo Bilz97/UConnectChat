@@ -34,15 +34,15 @@ const LoginForm = ({
           text2: 'Invalid email address',
         })
       } else {
-        navigation.getParent()?.navigate('App', { screen: 'Home' })
+        navigation.navigate('App', { screen: 'Home' })
       }
     },
   })
 
   return (
-    <View className="bg-gray-200 p-5 rounded-md border border-gray-300">
+    <View className="bg-gray-200 p-5 rounded-md border border-gray-300 w-full items-center">
       <Text className="text-gray-700 text-xl font-bold self-center mb-5">{'Sign in'}</Text>
-      <View className={'w-80 border-gray-300'}>
+      <View className={'w-full'}>
         <UInputField
           labelTitle={'Email'}
           placeholder={'Enter email'}
