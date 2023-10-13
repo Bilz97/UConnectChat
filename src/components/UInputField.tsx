@@ -15,7 +15,7 @@ const UInputField = ({ labelTitle, placeholder, inputValue, onChangeText, secure
     <View className="mb-2">
       <Text className="text-gray-700 text-lg font-semibold">{labelTitle}</Text>
       <TextInput
-        className="p-1 bg-gray-50 h-10"
+        className="p-1 bg-gray-50 h-10 "
         placeholder={placeholder}
         onChangeText={onChangeText}
         secureTextEntry={secure}
