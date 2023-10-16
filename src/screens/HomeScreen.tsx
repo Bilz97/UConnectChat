@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { SafeAreaView, TextInput, View } from 'react-native'
+import { SafeAreaView, Text, TextInput, View } from 'react-native'
 
 import { EvilIcons } from '@expo/vector-icons'
 import { type StackNavigationProp } from '@react-navigation/stack'
@@ -19,7 +19,7 @@ const HomeScreen = ({ navigation }: { navigation: HomeScreenNavigationProp }) =>
     },
   })
 
-  const SearchBar = () => {
+  const searchBar = () => {
     return (
       <View className="flex-row items-center border rounded-sm border-gray-700 bg-white">
         <TextInput
@@ -36,9 +36,31 @@ const HomeScreen = ({ navigation }: { navigation: HomeScreenNavigationProp }) =>
     )
   }
 
+  const myFriends = () => {
+    return (
+      // flat list horizontal with list of friends
+      <View className="mt-5">
+        <Text className="text-lg font-bold">{'My friends'}</Text>
+      </View>
+    )
+  }
+
+  const myMessages = () => {
+    return (
+      // flat list horizontal with list of friends
+      <View className="mt-5">
+        <Text className="text-lg font-bold">{'My Messages'}</Text>
+      </View>
+    )
+  }
+
   return (
     <SafeAreaView className="flex-1 m-5">
-      <View className={'flex-1'}>{SearchBar()}</View>
+      <View className={'flex-1'}>
+        {searchBar()}
+        {myFriends()}
+        {myMessages()}
+      </View>
     </SafeAreaView>
   )
 }

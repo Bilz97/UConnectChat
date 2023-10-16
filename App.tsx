@@ -3,6 +3,7 @@ import * as React from 'react'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { initializeApp } from 'firebase/app'
 import Toast from 'react-native-toast-message'
 
 import { type AppTabStack, type RootStack } from './src/navigation/navigation'
