@@ -29,7 +29,7 @@ const app = initializeApp(firebaseConfig)
 initializeAuth(app, {
   persistence: getReactNativePersistence(ReactNativeAsyncStorage),
 })
-console.log('*** initialize FB')
+
 const db = getFirestore(app)
 
 export { getAuth, db, app }

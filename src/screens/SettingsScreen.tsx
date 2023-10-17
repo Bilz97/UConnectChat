@@ -1,24 +1,36 @@
 import * as React from 'react'
-import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView, View } from 'react-native'
 
-import { EvilIcons } from '@expo/vector-icons'
+import { type StackNavigationProp } from '@react-navigation/stack'
 
-const SettingsScreen = () => {
-  const settingsOption = (title: string, onPress: () => void) => {
-    return (
-      <TouchableOpacity className="flex-row justify-between border w-full mb-5 p-5 border-gray-300 rounded-md">
-        <Text className="text-lg ">{title}</Text>
+import NavBarOption from '../components/NavBarOption'
+import { type AppTabStack } from '../navigation/navigation'
+import { logoutUser } from '../redux/actions/userActions'
+import { useAppDispatch } from '../redux/store/hooks'
 
-        <EvilIcons name="chevron-right" size={36} color="gray" />
-      </TouchableOpacity>
-    )
+type SettingsScreenNavigationProp = StackNavigationProp<AppTabStack, 'Settings'>
+
+const SettingsScreen = ({ navigation }: { navigation: SettingsScreenNavigationProp }) => {
+  const dispatch = useAppDispatch()
+
+  const logout = () => {
+    try {
+      console.log('press logout')
+      dispatch(logoutUser())
+      navigation.getParent()?.navigate('Auth')
+    } catch {}
   }
 
   return (
     <SafeAreaView className="flex-1 m-5">
       <View className={'flex-1 items-center'}>
-        {settingsOption('Personal information', null)}
-        {settingsOption('Logout', null)}
+        <NavBarOption
+          title="Personal information"
+          onPress={() => {
+            console.log('PI')
+          }}
+        />
+        <NavBarOption title="Logout" onPress={logout} />
       </View>
     </SafeAreaView>
   )

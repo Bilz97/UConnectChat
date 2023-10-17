@@ -1,6 +1,6 @@
-import { createSelector, createSlice } from '@reduxjs/toolkit'
-import { getAuth } from 'firebase/auth'
+import { createSlice } from '@reduxjs/toolkit'
 
+import { logoutUser } from '../actions/userActions'
 import { type RootState } from '../store/store'
 
 interface User {
@@ -25,20 +25,22 @@ export const userSlice = createSlice({
     loginUser: (state, action) => {
       state.user = action.payload
     },
-    logoutUser: (state) => {
+  },
+  extraReducers: (builder) => {
+    builder.addCase(logoutUser.fulfilled, (state) => {
+      // Reset the user state when logout is successful
+      console.log('*** reset user')
       state.user = {} as User
-      // getAuth().signOut()
-    },
+    })
   },
 })
 
-export const { loginUser, logoutUser } = userSlice.actions
+export const { loginUser } = userSlice.actions
 
 // for larger applications best practice would be to have a seperate selectors file
-export const user = (state: RootState) => state.user.user
 
 export const UserSelectors = {
-  getUser: createSelector(user, (userData) => userData as User | null),
+  selectUser: (state: RootState) => state.user.user,
 
   // Add more user-related selectors here
 }

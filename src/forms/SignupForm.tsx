@@ -2,13 +2,15 @@ import * as React from 'react'
 import { Text, View } from 'react-native'
 
 import { type StackNavigationProp } from '@react-navigation/stack'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { useFormik } from 'formik'
 import Toast from 'react-native-toast-message'
 
 import UButton from '../components/UButton'
 import UInputField from '../components/UInputField'
 import { type RootStack } from '../navigation/navigation'
+import { loginUser } from '../redux/slices/userSlice'
+import { useAppDispatch } from '../redux/store/hooks'
 import { getAuth } from '../services/firebase'
 
 type SignupFormNavigationProp = StackNavigationProp<RootStack, 'Auth'>
@@ -21,6 +23,7 @@ const SignupForm = ({
   setIsSignup: (value: boolean) => void
 }) => {
   const [loading, setLoading] = React.useState(false)
+  const dispatch = useAppDispatch()
 
   const { values, handleSubmit, handleChange } = useFormik({
     initialValues: {
@@ -49,11 +52,20 @@ const SignupForm = ({
       } else {
         setLoading(true)
         await createUserWithEmailAndPassword(getAuth(), formValues.email, formValues.password)
-          .then(async (userCredential) => {
+          .then(async (authUser) => {
             // Signed in
-            const user = userCredential.user
-            console.log(user)
-            console.log('*** try navigate')
+            const user = authUser.user
+            await updateProfile(user, {
+              displayName: `${formValues.firstName} ${formValues.lastName}`,
+            })
+            dispatch(
+              loginUser({
+                email: user.email,
+                uid: user.uid,
+                displayName: user?.displayName ?? null,
+                photoUrl: user?.photoURL ?? null,
+              })
+            )
             navigation.navigate('App', { screen: 'Home' })
             // ...
           })

@@ -7,17 +7,17 @@ import { onAuthStateChanged } from 'firebase/auth'
 import Toast from 'react-native-toast-message'
 
 import { type AppTabStack, type RootStack } from './src/navigation/navigation'
+import { loginUser, logoutUser, UserSelectors } from './src/redux/slices/userSlice'
+import { useAppDispatch, useAppSelector } from './src/redux/store/hooks'
 import AuthScreen from './src/screens/AuthScreen'
 import HomeScreen from './src/screens/HomeScreen'
 import SettingsScreen from './src/screens/SettingsScreen'
 import { getAuth } from './src/services/firebase'
-import { loginUser, logoutUser, UserSelectors } from './src/slices/userSlice'
-import { useAppDispatch, useAppSelector } from './src/store/hooks'
 
 export default function App() {
   const Stack = createNativeStackNavigator<RootStack>()
   const Tab = createBottomTabNavigator<AppTabStack>()
-  const user = useAppSelector(UserSelectors.getUser)
+  const user = useAppSelector(UserSelectors.selectUser)
 
   const dispatch = useAppDispatch()
 
@@ -34,8 +34,6 @@ export default function App() {
             photoUrl: userAuth?.photoURL ?? null,
           })
         )
-      } else {
-        dispatch(logoutUser())
       }
     })
   }, [dispatch])

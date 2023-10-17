@@ -9,6 +9,8 @@ import Toast from 'react-native-toast-message'
 import UButton from '../components/UButton'
 import UInputField from '../components/UInputField'
 import { type RootStack } from '../navigation/navigation'
+import { loginUser } from '../redux/slices/userSlice'
+import { useAppDispatch } from '../redux/store/hooks'
 import { getAuth } from '../services/firebase'
 
 type LoginFormNavigationProp = StackNavigationProp<RootStack, 'Auth'>
@@ -21,6 +23,7 @@ const LoginForm = ({
   setIsSignup: (value: boolean) => void
 }) => {
   const [loading, setLoading] = React.useState(false)
+  const dispatch = useAppDispatch()
 
   const { values, handleSubmit, handleChange } = useFormik({
     initialValues: {
@@ -45,6 +48,14 @@ const LoginForm = ({
             const user = userCredential.user
 
             console.log(user)
+            dispatch(
+              loginUser({
+                email: user.email,
+                uid: user.uid,
+                displayName: user?.displayName ?? null,
+                photoUrl: user?.photoURL ?? null,
+              })
+            )
             Toast.show({
               type: 'success',
               text1: 'Login successful!',
