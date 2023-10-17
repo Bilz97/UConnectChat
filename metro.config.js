@@ -1,6 +1,13 @@
 const { getDefaultConfig } = require('@expo/metro-config')
 
-const defaultConfig = getDefaultConfig(__dirname)
-defaultConfig.resolver.sourceExts.push('cjs')
+module.exports = (async () => {
+  const defaultConfig = await getDefaultConfig(__dirname)
 
-module.exports = defaultConfig
+  // Add 'cjs' to sourceExts if needed
+  defaultConfig.resolver.sourceExts.push('cjs')
+
+  // Modify the resolver to include resolverMainFields
+  defaultConfig.resolver.resolverMainFields = ['react-native', 'browser', 'main']
+
+  return defaultConfig
+})()

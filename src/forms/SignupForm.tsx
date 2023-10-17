@@ -2,12 +2,14 @@ import * as React from 'react'
 import { Text, View } from 'react-native'
 
 import { type StackNavigationProp } from '@react-navigation/stack'
+import { createUserWithEmailAndPassword } from 'firebase/auth'
 import { useFormik } from 'formik'
 import Toast from 'react-native-toast-message'
 
 import UButton from '../components/UButton'
 import UInputField from '../components/UInputField'
 import { type RootStack } from '../navigation/navigation'
+import { getAuth } from '../services/firebase'
 
 type SignupFormNavigationProp = StackNavigationProp<RootStack, 'Auth'>
 
@@ -18,6 +20,8 @@ const SignupForm = ({
   navigation: SignupFormNavigationProp
   setIsSignup: (value: boolean) => void
 }) => {
+  const [loading, setLoading] = React.useState(false)
+
   const { values, handleSubmit, handleChange } = useFormik({
     initialValues: {
       firstName: '',
@@ -26,7 +30,7 @@ const SignupForm = ({
       password: '',
       confirmPassword: '',
     },
-    onSubmit: (formValues) => {
+    onSubmit: async (formValues) => {
       console.log('*** username: ', formValues.email)
       console.log('*** password: ', formValues.password)
       // TODO add auth checks later
@@ -34,10 +38,32 @@ const SignupForm = ({
         Toast.show({
           type: 'error',
           text1: 'Error!',
-          text2: 'Invalid email address',
+          text2: 'Invalid email address.',
+        })
+      } else if (formValues.password !== formValues.confirmPassword) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error!',
+          text2: 'Password fields must match.',
         })
       } else {
-        navigation.getParent()?.navigate('App', { screen: 'Home' })
+        setLoading(true)
+        await createUserWithEmailAndPassword(getAuth(), formValues.email, formValues.password)
+          .then(async (userCredential) => {
+            // Signed in
+            const user = userCredential.user
+            console.log(user)
+            console.log('*** try navigate')
+            navigation.navigate('App', { screen: 'Home' })
+            // ...
+          })
+          .catch((error) => {
+            const errorCode = error.code
+            const errorMessage = error.message
+            console.log(errorCode, errorMessage)
+            // ..
+          })
+        setLoading(false)
       }
     },
   })
@@ -93,6 +119,7 @@ const SignupForm = ({
           onButtonPress={() => {
             handleSubmit()
           }}
+          loading={loading}
           buttonTitle="Signup"
           variant="primary"
           disabled={values.password.length === 0 || values.email.length === 0}

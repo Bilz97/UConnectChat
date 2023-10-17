@@ -4,7 +4,10 @@ import {
   FIREBASE_MEASUREMENT_ID,
   FIREBASE_MESSAGEING_SENDER_ID,
 } from '@env'
+import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage'
 import { initializeApp } from 'firebase/app'
+import { getAuth, getReactNativePersistence, initializeAuth } from 'firebase/auth'
+import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: FIREBASE_API_KEY,
@@ -22,4 +25,11 @@ const firebaseConfig = {
   measurementId: FIREBASE_MEASUREMENT_ID,
 }
 
-export const app = initializeApp(firebaseConfig)
+const app = initializeApp(firebaseConfig)
+initializeAuth(app, {
+  persistence: getReactNativePersistence(ReactNativeAsyncStorage),
+})
+console.log('*** initialize FB')
+const db = getFirestore(app)
+
+export { getAuth, db, app }
