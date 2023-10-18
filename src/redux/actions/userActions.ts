@@ -1,9 +1,19 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { addDoc, collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore'
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  serverTimestamp,
+  setDoc,
+  where,
+} from 'firebase/firestore'
 import Toast from 'react-native-toast-message'
 
 import { auth, db } from '../../services/firebase'
-import { type User } from '../slices/userSlice'
+import { type User } from '../models/userModel'
 
 export const logoutUser = createAsyncThunk('user/logout', async () => {
   try {
@@ -86,7 +96,7 @@ export const addFriend = createAsyncThunk(
         return null
       }
 
-      await setDoc(docRef, { [friendUserId]: true }, { merge: true })
+      await setDoc(docRef, { [friendUserId]: { addedAt: serverTimestamp() } }, { merge: true })
 
       const usersCollection = collection(db, 'users')
 
@@ -119,12 +129,16 @@ export const getMyFriends = createAsyncThunk(
       const docSnapshot = await getDoc(docRef)
 
       if (docSnapshot.exists()) {
-        const friendData = docSnapshot.data()
+        const friendsData = docSnapshot.data()
 
         // Extract the friend IDs from the document data
-        const friendIds = Object.keys(friendData)
+        const friendIds = Object.keys(friendsData).sort(
+          (a, b) =>
+            (friendsData[a]?.addedAt?.toMillis() || 0) - (friendsData[b]?.addedAt?.toMillis() || 0)
+        )
 
         const usersCollection = collection(db, 'users')
+
         // Query users collection for all matching uids
         const q = query(usersCollection, where('uid', 'in', friendIds))
         const friends: User[] = []
@@ -142,12 +156,7 @@ export const getMyFriends = createAsyncThunk(
         // If the document doesn't exist, the user has no friends
         return []
       }
-    } catch (err) {
-      Toast.show({
-        type: 'error',
-        text1: 'Error!',
-        text2: 'Could not find friends.',
-      })
+    } catch {
       return []
     }
   }

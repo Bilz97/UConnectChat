@@ -26,9 +26,7 @@
     "@typescript-eslint/no-misused-promises": "off",
     "@typescript-eslint/no-floating-promises": "off",
     "multiline-ternary": "off",
-    // this is for sorting WITHIN an import
     "sort-imports": ["error", { "ignoreCase": true, "ignoreDeclarationSort": true }],
-    // this is for sorting imports
     "import/order": [
       "error",
       {

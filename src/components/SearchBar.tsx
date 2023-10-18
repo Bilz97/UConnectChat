@@ -5,8 +5,9 @@ import { FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { EvilIcons } from '@expo/vector-icons'
 import { useFormik } from 'formik'
 
-import { addFriend, getMyFriends, searchUsers } from '../redux/actions/userActions'
-import { type User, UserSelectors } from '../redux/slices/userSlice'
+import { addFriend, searchUsers } from '../redux/actions/userActions'
+import { type User } from '../redux/models/userModel'
+import { UserSelectors } from '../redux/slices/userSlice'
 import { useAppDispatch, useAppSelector } from '../redux/store/hooks'
 
 const SearchBar = () => {
