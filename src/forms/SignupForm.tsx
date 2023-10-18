@@ -68,7 +68,9 @@ const SignupForm = ({
             })
 
             await dispatch(
-              storeUserData({ email: user.email, uid: user.uid, displayName, photoUrl: '' })
+              storeUserData({
+                user: { email: user.email, uid: user.uid, displayName, photoUrl: '' },
+              })
             )
 
             dispatch(
