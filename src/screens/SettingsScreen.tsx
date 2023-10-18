@@ -13,13 +13,9 @@ type SettingsScreenNavigationProp = StackNavigationProp<AppTabStack, 'Settings'>
 const SettingsScreen = ({ navigation }: { navigation: SettingsScreenNavigationProp }) => {
   const dispatch = useAppDispatch()
 
-  const logout = () => {
-    try {
-      console.log('press logout')
-      dispatch(logoutUser())
-      navigation.getParent()?.navigate('Auth')
-    } catch {}
-  }
+  const logout = React.useCallback(async () => {
+    await dispatch(logoutUser()).then(() => navigation.getParent()?.navigate('Auth'))
+  }, [navigation, dispatch])
 
   return (
     <SafeAreaView className="flex-1 m-5">

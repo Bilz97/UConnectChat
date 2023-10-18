@@ -7,12 +7,12 @@ import { onAuthStateChanged } from 'firebase/auth'
 import Toast from 'react-native-toast-message'
 
 import { type AppTabStack, type RootStack } from './src/navigation/navigation'
-import { loginUser, logoutUser, UserSelectors } from './src/redux/slices/userSlice'
+import { loginUser, UserSelectors } from './src/redux/slices/userSlice'
 import { useAppDispatch, useAppSelector } from './src/redux/store/hooks'
 import AuthScreen from './src/screens/AuthScreen'
 import HomeScreen from './src/screens/HomeScreen'
 import SettingsScreen from './src/screens/SettingsScreen'
-import { getAuth } from './src/services/firebase'
+import { auth } from './src/services/firebase'
 
 export default function App() {
   const Stack = createNativeStackNavigator<RootStack>()
@@ -23,7 +23,7 @@ export default function App() {
 
   // check at page load if a user is authenticated
   React.useEffect(() => {
-    onAuthStateChanged(getAuth(), (userAuth) => {
+    const unsubscribe = onAuthStateChanged(auth, (userAuth) => {
       if (userAuth) {
         // user is logged in, send the user's details to redux, store the current user in the state
         dispatch(
@@ -36,9 +36,10 @@ export default function App() {
         )
       }
     })
+
+    return unsubscribe
   }, [dispatch])
 
-  console.log('*** user: ', user)
   const AppTabStack = () => {
     return (
       <Tab.Navigator initialRouteName="Home">

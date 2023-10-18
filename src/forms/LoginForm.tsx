@@ -11,7 +11,7 @@ import UInputField from '../components/UInputField'
 import { type RootStack } from '../navigation/navigation'
 import { loginUser } from '../redux/slices/userSlice'
 import { useAppDispatch } from '../redux/store/hooks'
-import { getAuth } from '../services/firebase'
+import { auth } from '../services/firebase'
 
 type LoginFormNavigationProp = StackNavigationProp<RootStack, 'Auth'>
 
@@ -31,9 +31,6 @@ const LoginForm = ({
       password: '',
     },
     onSubmit: async (formValues) => {
-      console.log('*** username: ', formValues.email)
-      console.log('*** password: ', formValues.password)
-      // TODO add auth checks later
       if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(formValues.email)) {
         Toast.show({
           type: 'error',
@@ -42,7 +39,7 @@ const LoginForm = ({
         })
       } else {
         setLoading(true)
-        await signInWithEmailAndPassword(getAuth(), formValues.email, formValues.password)
+        await signInWithEmailAndPassword(auth, formValues.email, formValues.password)
           .then((userCredential) => {
             // Signed in
             const user = userCredential.user

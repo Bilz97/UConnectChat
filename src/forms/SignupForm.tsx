@@ -9,9 +9,10 @@ import Toast from 'react-native-toast-message'
 import UButton from '../components/UButton'
 import UInputField from '../components/UInputField'
 import { type RootStack } from '../navigation/navigation'
+import { storeUserData } from '../redux/actions/userActions'
 import { loginUser } from '../redux/slices/userSlice'
 import { useAppDispatch } from '../redux/store/hooks'
-import { getAuth } from '../services/firebase'
+import { auth } from '../services/firebase'
 
 type SignupFormNavigationProp = StackNavigationProp<RootStack, 'Auth'>
 
@@ -34,8 +35,6 @@ const SignupForm = ({
       confirmPassword: '',
     },
     onSubmit: async (formValues) => {
-      console.log('*** username: ', formValues.email)
-      console.log('*** password: ', formValues.password)
       // TODO add auth checks later
       if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(formValues.email)) {
         Toast.show({
@@ -51,13 +50,27 @@ const SignupForm = ({
         })
       } else {
         setLoading(true)
-        await createUserWithEmailAndPassword(getAuth(), formValues.email, formValues.password)
+        await createUserWithEmailAndPassword(auth, formValues.email, formValues.password)
           .then(async (authUser) => {
             // Signed in
             const user = authUser.user
+            const displayName = `${formValues.firstName} ${formValues.lastName}`
+            if (user.email === null) {
+              Toast.show({
+                type: 'error',
+                text1: 'Error!',
+                text2: 'Something went wrong. Please try again',
+              })
+              return
+            }
             await updateProfile(user, {
-              displayName: `${formValues.firstName} ${formValues.lastName}`,
+              displayName,
             })
+
+            await dispatch(
+              storeUserData({ email: user.email, uid: user.uid, displayName, photoUrl: '' })
+            )
+
             dispatch(
               loginUser({
                 email: user.email,
@@ -66,14 +79,22 @@ const SignupForm = ({
                 photoUrl: user?.photoURL ?? null,
               })
             )
+            Toast.show({
+              type: 'success',
+              text1: 'Sign up was successful!',
+            })
+
             navigation.navigate('App', { screen: 'Home' })
-            // ...
           })
           .catch((error) => {
             const errorCode = error.code
             const errorMessage = error.message
             console.log(errorCode, errorMessage)
-            // ..
+            Toast.show({
+              type: 'error',
+              text1: 'Error!',
+              text2: errorMessage,
+            })
           })
         setLoading(false)
       }

@@ -31,5 +31,6 @@ initializeAuth(app, {
 })
 
 const db = getFirestore(app)
+const auth = getAuth(app)
 
-export { getAuth, db, app }
+export { auth, db, app }
