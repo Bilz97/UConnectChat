@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import * as React from 'react'
-import { Text, TouchableOpacity } from 'react-native'
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native'
 
 type ButtonVariant = 'primary' | 'secondary'
 
@@ -9,18 +9,22 @@ interface Props {
   buttonTitle: string
   onButtonPress: () => void
   disabled?: boolean
+  loading?: boolean
 }
-const UButton = ({ variant, buttonTitle, onButtonPress, disabled = false }: Props) => {
+const UButton = ({ variant, buttonTitle, onButtonPress, disabled = false, loading }: Props) => {
   if (variant === 'primary') {
     return (
       <TouchableOpacity
-        disabled={disabled}
+        disabled={disabled || loading}
         className={`h-10 bg-gray-900 items-center justify-center rounded-md border border-black ${
-          disabled && 'opacity-50'
+          (disabled || loading) && 'opacity-50'
         } `}
         onPress={onButtonPress}
       >
-        <Text className="text-xl font-semibold text-gray-200">{buttonTitle}</Text>
+        <View className="flex-row items-center">
+          <Text className="text-xl font-semibold text-gray-200">{buttonTitle}</Text>
+          {loading && <ActivityIndicator className="ml-2" size="small" color="white" />}
+        </View>
       </TouchableOpacity>
     )
   } else return null

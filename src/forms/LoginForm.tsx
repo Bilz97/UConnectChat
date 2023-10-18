@@ -2,12 +2,16 @@ import * as React from 'react'
 import { Text, View } from 'react-native'
 
 import { type StackNavigationProp } from '@react-navigation/stack'
+import { signInWithEmailAndPassword } from 'firebase/auth'
 import { useFormik } from 'formik'
 import Toast from 'react-native-toast-message'
 
 import UButton from '../components/UButton'
 import UInputField from '../components/UInputField'
 import { type RootStack } from '../navigation/navigation'
+import { loginUser } from '../redux/slices/userSlice'
+import { useAppDispatch } from '../redux/store/hooks'
+import { auth } from '../services/firebase'
 
 type LoginFormNavigationProp = StackNavigationProp<RootStack, 'Auth'>
 
@@ -18,15 +22,15 @@ const LoginForm = ({
   navigation: LoginFormNavigationProp
   setIsSignup: (value: boolean) => void
 }) => {
+  const [loading, setLoading] = React.useState(false)
+  const dispatch = useAppDispatch()
+
   const { values, handleSubmit, handleChange } = useFormik({
     initialValues: {
       email: '',
       password: '',
     },
-    onSubmit: (formValues) => {
-      console.log('*** username: ', formValues.email)
-      console.log('*** password: ', formValues.password)
-      // TODO add auth checks later
+    onSubmit: async (formValues) => {
       if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(formValues.email)) {
         Toast.show({
           type: 'error',
@@ -34,7 +38,37 @@ const LoginForm = ({
           text2: 'Invalid email address',
         })
       } else {
-        navigation.navigate('App', { screen: 'Home' })
+        setLoading(true)
+        await signInWithEmailAndPassword(auth, formValues.email, formValues.password)
+          .then((userCredential) => {
+            // Signed in
+            const user = userCredential.user
+
+            console.log(user)
+            dispatch(
+              loginUser({
+                email: user.email,
+                uid: user.uid,
+                displayName: user?.displayName ?? null,
+                photoUrl: user?.photoURL ?? null,
+              })
+            )
+            Toast.show({
+              type: 'success',
+              text1: 'Login successful!',
+            })
+            navigation.navigate('App', { screen: 'Home' })
+          })
+          .catch((error) => {
+            const errorMessage = error.message
+
+            Toast.show({
+              type: 'error',
+              text1: 'Error!',
+              text2: errorMessage,
+            })
+          })
+        setLoading(false)
       }
     },
   })
@@ -74,6 +108,7 @@ const LoginForm = ({
           buttonTitle="Login"
           variant="primary"
           disabled={values.password.length === 0 || values.email.length === 0}
+          loading={loading}
         />
       </View>
     </View>
