@@ -5,13 +5,15 @@ import { FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { EvilIcons } from '@expo/vector-icons'
 import { useFormik } from 'formik'
 
-import { searchUsers } from '../redux/actions/userActions'
-import { type User } from '../redux/slices/userSlice'
-import { useAppDispatch } from '../redux/store/hooks'
+import { addFriend, searchUsers } from '../redux/actions/userActions'
+import { type User } from '../redux/models/userModel'
+import { UserSelectors } from '../redux/slices/userSlice'
+import { useAppDispatch, useAppSelector } from '../redux/store/hooks'
 
 const SearchBar = () => {
   const dispatch = useAppDispatch()
   const [searchResults, setSearchResults] = React.useState<User[]>([])
+  const profile = useAppSelector(UserSelectors.selectUser)
 
   const { values, handleChange, handleSubmit } = useFormik({
     initialValues: {
@@ -24,13 +26,24 @@ const SearchBar = () => {
         return
       }
       try {
-        const users = await dispatch(searchUsers(value.search))
+        const users = await dispatch(
+          searchUsers({ userUid: profile.uid, displayName: value.search })
+        )
         setSearchResults(users.payload as User[])
       } catch (err) {
         console.log('err: ', err)
       }
     },
   })
+
+  const onFriendPress = React.useCallback(
+    async (friendUid: string) => {
+      await dispatch(addFriend({ userUid: profile.uid, friendUserId: friendUid }))
+
+      setSearchResults([])
+    },
+    [dispatch]
+  )
 
   return (
     <View className="items-center">
@@ -59,7 +72,12 @@ const SearchBar = () => {
           ItemSeparatorComponent={() => <View className="w-full border-0.5" />}
           ListEmptyComponent={null}
           renderItem={({ item, index }) => (
-            <TouchableOpacity className={'my-2'}>
+            <TouchableOpacity
+              className={'my-2'}
+              onPress={() => {
+                onFriendPress(item.uid)
+              }}
+            >
               <View className="flex-row">
                 <Text className="font-semibold">{'Name: '}</Text>
                 <Text>{item.displayName}</Text>
