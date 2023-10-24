@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-import { addFriend, getMyFriends, logoutUser } from '../actions/userActions'
-import { type User } from '../models/userModel'
+import { addFriend, getMyFriends, logoutUser, readyChatRoom } from '../actions/userActions'
+import { type ChatRoom, type User } from '../models/userModel'
 import { type RootState } from '../store/store'
 
 export const userSlice = createSlice({
@@ -22,12 +22,12 @@ export const userSlice = createSlice({
       state.user = {} as User
     })
     builder.addCase(getMyFriends.fulfilled, (state, action) => {
-      if (action.payload) {
+      if (action.payload !== null) {
         state.myFriends = action.payload
       }
     })
     builder.addCase(addFriend.fulfilled, (state, action) => {
-      if (action.payload) {
+      if (action.payload !== null) {
         const friends = state.myFriends
         friends.unshift(action.payload)
         state.myFriends = friends

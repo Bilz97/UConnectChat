@@ -5,6 +5,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  orderBy,
   query,
   serverTimestamp,
   setDoc,
@@ -13,7 +14,7 @@ import {
 import Toast from 'react-native-toast-message'
 
 import { auth, db } from '../../services/firebase'
-import { type User } from '../models/userModel'
+import { type ChatRoom, type Message, type User } from '../models/userModel'
 
 export const logoutUser = createAsyncThunk('user/logout', async () => {
   try {
@@ -158,6 +159,115 @@ export const getMyFriends = createAsyncThunk(
       }
     } catch {
       return []
+    }
+  }
+)
+
+export const readyChatRoom = createAsyncThunk(
+  'user/readyChatRoom',
+  async ({
+    userUid,
+    friendUserId,
+  }: {
+    userUid: string
+    friendUserId: string
+  }): Promise<ChatRoom | null> => {
+    try {
+      const chatRoomsCollection = collection(db, 'chatRooms')
+      const participants = [userUid, friendUserId]
+
+      // Firebase limitation, only 1 array-contains allowed per disjunction
+      const q1 = query(chatRoomsCollection, where('participants', 'array-contains', userUid))
+      const q2 = query(chatRoomsCollection, where('participants', 'array-contains', friendUserId))
+
+      const [querySnapshot1, querySnapshot2] = await Promise.all([getDocs(q1), getDocs(q2)])
+
+      const matchingChatRooms = querySnapshot1.docs.filter((doc1) => {
+        const chatRoomData1 = doc1.data()
+        return querySnapshot2.docs.some((doc2) => chatRoomData1.roomName === doc2.data().roomName)
+      })
+
+      if (matchingChatRooms.length > 0) {
+        // There should only be 1 matching chat room
+        const chatRoomData = matchingChatRooms[0].data()
+        const q = query(chatRoomsCollection, where('roomName', '==', chatRoomData.roomName))
+
+        const docSnapshot = await getDocs(q)
+        const chatRoomDoc = docSnapshot?.docs[0]
+
+        const messagesCollection = collection(chatRoomDoc.ref, 'messages')
+        const mQ = query(messagesCollection, orderBy('timestamp'))
+        const messagesQuerySnapshot = await getDocs(mQ)
+        const messages: Message[] = []
+
+        messagesQuerySnapshot.forEach((doc) => {
+          const messageData = doc.data()
+
+          // Serialize the Firestore timestamp to ISO string
+          const timestampISO = messageData.timestamp.toDate().toISOString()
+          const serializedMessage = { ...messageData, timestamp: timestampISO }
+
+          messages.push(serializedMessage as Message)
+        })
+        const chatRoom: ChatRoom = { id: chatRoomData.roomName, messages }
+
+        return chatRoom
+      }
+
+      const roomName = `room-${userUid}-${friendUserId}`
+
+      // Create a new chat room document with the custom document ID of roomName
+      const docRef = doc(db, 'chatRooms', roomName)
+      const chatRoomData = {
+        roomName,
+        participants,
+      }
+      // We use setDoc because we want to specify the document ID
+      await setDoc(docRef, chatRoomData)
+      const chatRoom: ChatRoom = { id: chatRoomData.roomName, messages: [] }
+      return chatRoom
+    } catch (err) {
+      console.log('*** err: ', err)
+      Toast.show({
+        type: 'error',
+        text1: 'Error!',
+        text2: 'An error occured when adding your friend. Please try again.',
+      })
+      return null
+    }
+  }
+)
+
+export const sendMessage = createAsyncThunk(
+  'user/sendMessage',
+  async ({
+    userUid,
+    friendUserId,
+    message,
+  }: {
+    userUid: string
+    friendUserId: string
+    message: string
+  }): Promise<void> => {
+    try {
+      const roomName = `room-${userUid}-${friendUserId}`
+
+      const docRef = doc(db, 'chatRooms', roomName)
+      const messagesCollection = collection(docRef, 'messages')
+
+      const newMessage = {
+        text: message,
+        sender: userUid,
+        timestamp: serverTimestamp(),
+      }
+
+      await addDoc(messagesCollection, newMessage)
+    } catch (err) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error!',
+        text2: 'Could not send message. Please try again later.',
+      })
     }
   }
 )

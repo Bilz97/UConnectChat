@@ -1,11 +1,12 @@
 import * as React from 'react'
-import { FlatList, SafeAreaView, Text, View } from 'react-native'
+import { Alert, FlatList, SafeAreaView, Text, TouchableOpacity, View } from 'react-native'
 
 import { type StackNavigationProp } from '@react-navigation/stack'
 
 import SearchBar from '../components/SearchBar'
 import { type AppTabStack } from '../navigation/navigation'
-import { getMyFriends } from '../redux/actions/userActions'
+import { getMyFriends, readyChatRoom } from '../redux/actions/userActions'
+import { type User } from '../redux/models/userModel'
 import { UserSelectors } from '../redux/slices/userSlice'
 import { useAppDispatch, useAppSelector } from '../redux/store/hooks'
 
@@ -23,6 +24,56 @@ const HomeScreen = ({ navigation }: { navigation: HomeScreenNavigationProp }) =>
     getFriends()
   }, [])
 
+  const onFriendPress = React.useCallback(
+    (friend: User) => {
+      Alert.alert(
+        'Friend Options',
+        'Please select one of the following options:',
+        [
+          {
+            text: 'Chat with Friend',
+            onPress: async () => {
+              try {
+                const chatRoom = await dispatch(
+                  readyChatRoom({ userUid: profile.uid, friendUserId: friend.uid })
+                )
+
+                navigation.getParent()?.navigate('Modals', {
+                  screen: 'ChatRoomModal',
+                  params: {
+                    name: friend.displayName,
+                    friendId: friend.uid,
+                    chatRoom: chatRoom.payload,
+                  },
+                })
+              } catch (err) {
+                console.log('*** error ', err)
+              }
+            },
+          },
+          {
+            text: 'Remove Friend',
+            style: 'destructive',
+            onPress: () => {
+              // Handle Option 2 action here
+              console.log('Option 2 selected')
+            },
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel',
+            onPress: () => {
+              // Handle Option 3 action here
+              console.log('Option 3 selected')
+            },
+          },
+        ],
+        { cancelable: true } // Set to true if you want to allow cancelling the alert by tapping outside
+      )
+    },
+    [dispatch, profile.uid]
+  )
+
   const myFriendsList = React.useCallback(() => {
     return (
       // flat list horizontal with list of friends
@@ -35,10 +86,15 @@ const HomeScreen = ({ navigation }: { navigation: HomeScreenNavigationProp }) =>
           extraData={myFriends}
           showsHorizontalScrollIndicator={false}
           renderItem={({ item, index }) => (
-            <View className="border p-5 mr-2 ">
+            <TouchableOpacity
+              className="border p-5 mr-2"
+              onPress={() => {
+                onFriendPress(item)
+              }}
+            >
               <Text>{item.displayName}</Text>
               <Text>{item.email}</Text>
-            </View>
+            </TouchableOpacity>
           )}
         />
       </View>
