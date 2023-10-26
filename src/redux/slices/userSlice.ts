@@ -1,6 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-import { addFriend, getMyFriends, logoutUser, readyChatRoom } from '../actions/userActions'
+import {
+  addFriend,
+  getMyFriends,
+  logoutUser,
+  readyChatRoom,
+  refetchChatRoom,
+} from '../actions/userActions'
 import { type ChatRoom, type User } from '../models/userModel'
 import { type RootState } from '../store/store'
 
@@ -9,6 +15,7 @@ export const userSlice = createSlice({
   initialState: {
     user: {} as User,
     myFriends: [] as User[],
+    activeChatRoom: {} as ChatRoom,
   },
   reducers: {
     loginUser: (state, action) => {
@@ -33,6 +40,18 @@ export const userSlice = createSlice({
         state.myFriends = friends
       }
     })
+    builder.addCase(readyChatRoom.fulfilled, (state, action) => {
+      if (action.payload !== null) {
+        const chatRoom = action.payload
+        state.activeChatRoom = chatRoom
+      }
+    })
+    builder.addCase(refetchChatRoom.fulfilled, (state, action) => {
+      if (action.payload !== null) {
+        const chatRoom = action.payload
+        state.activeChatRoom = chatRoom
+      }
+    })
   },
 })
 
@@ -41,6 +60,7 @@ export const { loginUser } = userSlice.actions
 export const UserSelectors = {
   selectUser: (state: RootState) => state.user.user,
   selectMyFriends: (state: RootState) => state.user.myFriends,
+  selectActiveChatRoom: (state: RootState) => state.user.activeChatRoom,
 }
 
 export default userSlice.reducer

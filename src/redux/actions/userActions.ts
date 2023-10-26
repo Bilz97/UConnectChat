@@ -259,7 +259,6 @@ export const sendMessage = createAsyncThunk(
       const newMessage = {
         text: message,
         sender: userUid,
-        displayName,
         timestamp: serverTimestamp(),
       }
 
@@ -280,13 +279,12 @@ export const getUser = createAsyncThunk(
     try {
       const usersCollection = collection(db, 'users')
 
-      const q = query(usersCollection, where('uid', '>=', userUid))
+      const q = query(usersCollection, where('uid', '==', userUid))
 
       const docSnapshot = await getDocs(q)
       const userDoc = docSnapshot.docs[0]
       if (userDoc.exists()) {
         const user = userDoc.data() as User
-        console.log('*** user: ', user)
         return user
       }
       return null
@@ -298,5 +296,35 @@ export const getUser = createAsyncThunk(
       })
       return null
     }
+  }
+)
+
+export const refetchChatRoom = createAsyncThunk(
+  'user/getMessages',
+  async ({ roomId }: { roomId: string }): Promise<ChatRoom> => {
+    const chatRoomsCollection = collection(db, 'chatRooms')
+
+    const q = query(chatRoomsCollection, where('roomName', '==', roomId))
+
+    const docSnapshot = await getDocs(q)
+    const chatRoomDoc = docSnapshot?.docs[0]
+
+    const messagesCollection = collection(chatRoomDoc.ref, 'messages')
+    const mQ = query(messagesCollection, orderBy('timestamp'))
+    const messagesQuerySnapshot = await getDocs(mQ)
+    const messages: Message[] = []
+
+    messagesQuerySnapshot.forEach((doc) => {
+      const messageData = doc.data()
+
+      // Serialize the Firestore timestamp to ISO string
+      const timestampISO = messageData.timestamp.toDate().toISOString()
+      const serializedMessage = { ...messageData, timestamp: timestampISO }
+
+      messages.push(serializedMessage as Message)
+    })
+    const chatRoom: ChatRoom = { id: roomId, messages }
+
+    return chatRoom
   }
 )

@@ -1,7 +1,5 @@
 import * as React from 'react'
-import { TouchableOpacity } from 'react-native'
 
-import { EvilIcons } from '@expo/vector-icons'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'

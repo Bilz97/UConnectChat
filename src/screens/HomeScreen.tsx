@@ -34,16 +34,13 @@ const HomeScreen = ({ navigation }: { navigation: HomeScreenNavigationProp }) =>
             text: 'Chat with Friend',
             onPress: async () => {
               try {
-                const chatRoom = await dispatch(
-                  readyChatRoom({ userUid: profile.uid, friendUserId: friend.uid })
-                )
+                await dispatch(readyChatRoom({ userUid: profile.uid, friendUserId: friend.uid }))
 
                 navigation.getParent()?.navigate('Modals', {
                   screen: 'ChatRoomModal',
                   params: {
                     name: friend.displayName,
                     friendId: friend.uid,
-                    chatRoom: chatRoom.payload as ChatRoom,
                   },
                 })
               } catch (err) {
