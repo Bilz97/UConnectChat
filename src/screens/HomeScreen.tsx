@@ -6,7 +6,7 @@ import { type StackNavigationProp } from '@react-navigation/stack'
 import SearchBar from '../components/SearchBar'
 import { type AppTabStack } from '../navigation/navigation'
 import { getMyFriends, readyChatRoom } from '../redux/actions/userActions'
-import { type User } from '../redux/models/userModel'
+import { type ChatRoom, type User } from '../redux/models/userModel'
 import { UserSelectors } from '../redux/slices/userSlice'
 import { useAppDispatch, useAppSelector } from '../redux/store/hooks'
 
@@ -43,7 +43,7 @@ const HomeScreen = ({ navigation }: { navigation: HomeScreenNavigationProp }) =>
                   params: {
                     name: friend.displayName,
                     friendId: friend.uid,
-                    chatRoom: chatRoom.payload,
+                    chatRoom: chatRoom.payload as ChatRoom,
                   },
                 })
               } catch (err) {

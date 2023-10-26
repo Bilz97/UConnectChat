@@ -31,6 +31,7 @@ const LoginForm = ({
       password: '',
     },
     onSubmit: async (formValues) => {
+      console.log('login values: ', formValues)
       if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(formValues.email)) {
         Toast.show({
           type: 'error',
@@ -49,7 +50,7 @@ const LoginForm = ({
               loginUser({
                 email: user.email,
                 uid: user.uid,
-                displayName: user?.displayName ?? null,
+                displayName: user?.displayName,
                 photoUrl: user?.photoURL ?? null,
               })
             )

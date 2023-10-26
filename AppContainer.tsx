@@ -34,7 +34,7 @@ export default function App() {
           loginUser({
             email: userAuth.email,
             uid: userAuth.uid,
-            displayName: userAuth?.displayName ?? null,
+            displayName: userAuth?.displayName,
             photoUrl: userAuth?.photoURL ?? null,
           })
         )

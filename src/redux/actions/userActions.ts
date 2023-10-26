@@ -60,7 +60,7 @@ export const searchUsers = createAsyncThunk(
     querySnapshot.forEach((doc) => {
       if (doc.exists()) {
         const userData = doc.data() as User
-        if (userData?.displayName == null || userData?.uid === userUid) {
+        if (userData?.uid === userUid) {
           return
         }
         if (userData?.displayName.includes(displayName)) {
@@ -89,7 +89,6 @@ export const addFriend = createAsyncThunk(
 
       // Check if the friend is already added
       if (docSnapshot.exists() && docSnapshot.data()?.[friendUserId]) {
-        // Friend already exists, return an appropriate result
         Toast.show({
           type: 'info',
           text1: 'This user is already your friend',
@@ -222,8 +221,10 @@ export const readyChatRoom = createAsyncThunk(
         roomName,
         participants,
       }
+
       // We use setDoc because we want to specify the document ID
       await setDoc(docRef, chatRoomData)
+
       const chatRoom: ChatRoom = { id: chatRoomData.roomName, messages: [] }
       return chatRoom
     } catch (err) {
@@ -242,22 +243,23 @@ export const sendMessage = createAsyncThunk(
   'user/sendMessage',
   async ({
     userUid,
-    friendUserId,
+    displayName,
+    roomId,
     message,
   }: {
     userUid: string
-    friendUserId: string
+    displayName: string
+    roomId: string
     message: string
   }): Promise<void> => {
     try {
-      const roomName = `room-${userUid}-${friendUserId}`
-
-      const docRef = doc(db, 'chatRooms', roomName)
+      const docRef = doc(db, 'chatRooms', roomId)
       const messagesCollection = collection(docRef, 'messages')
 
       const newMessage = {
         text: message,
         sender: userUid,
+        displayName,
         timestamp: serverTimestamp(),
       }
 
@@ -268,6 +270,33 @@ export const sendMessage = createAsyncThunk(
         text1: 'Error!',
         text2: 'Could not send message. Please try again later.',
       })
+    }
+  }
+)
+
+export const getUser = createAsyncThunk(
+  'user/getUser',
+  async ({ userUid }: { userUid: string }): Promise<User | null> => {
+    try {
+      const usersCollection = collection(db, 'users')
+
+      const q = query(usersCollection, where('uid', '>=', userUid))
+
+      const docSnapshot = await getDocs(q)
+      const userDoc = docSnapshot.docs[0]
+      if (userDoc.exists()) {
+        const user = userDoc.data() as User
+        console.log('*** user: ', user)
+        return user
+      }
+      return null
+    } catch (err) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error!',
+        text2: 'Could not send message. Please try again later.',
+      })
+      return null
     }
   }
 )

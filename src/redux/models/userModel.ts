@@ -1,21 +1,18 @@
-export interface User {
+export type User = {
   email: string
   uid: string
-  displayName?: string
+  displayName: string
   photoUrl?: string
 }
 
-export interface Message {
+export type Message = {
   sender: string
+  displayName: string
   text: string
   timestamp: string
 }
 
-export interface ChatRoom {
+export type ChatRoom = {
   id: string
   messages: Message[]
-}
-
-export interface MyChatRooms {
-  chatRooms: ChatRoom[]
 }
