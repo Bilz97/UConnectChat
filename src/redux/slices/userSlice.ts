@@ -1,15 +1,34 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-import { addFriend, getMyFriends, logoutUser } from '../actions/userActions'
-import { type User } from '../models/userModel'
+import {
+  addFriend,
+  enterChatRoom,
+  getMyChatPreviews,
+  getMyFriends,
+  logoutUser,
+  readyChatRoom,
+  refetchChatRoom,
+} from '../actions/userActions'
+import { type ChatPreview, type ChatRoom, type User } from '../models/userModel'
 import { type RootState } from '../store/store'
+
+interface UserState {
+  user: User | null
+  myFriends: User[] | null
+  activeChatRoom: ChatRoom | null
+  myChatPreviews: ChatPreview[] | null
+}
+
+const initialState: UserState = {
+  user: null,
+  myFriends: null,
+  activeChatRoom: null,
+  myChatPreviews: null,
+}
 
 export const userSlice = createSlice({
   name: 'user',
-  initialState: {
-    user: {} as User,
-    myFriends: [] as User[],
-  },
+  initialState,
   reducers: {
     loginUser: (state, action) => {
       // Save user state when login is successful
@@ -19,18 +38,38 @@ export const userSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(logoutUser.fulfilled, (state) => {
       // Reset the user state when logout is successful
-      state.user = {} as User
+      state.user = null
     })
     builder.addCase(getMyFriends.fulfilled, (state, action) => {
-      if (action.payload) {
+      if (action.payload !== null) {
         state.myFriends = action.payload
       }
     })
     builder.addCase(addFriend.fulfilled, (state, action) => {
-      if (action.payload) {
-        const friends = state.myFriends
+      if (action.payload !== null) {
+        const friends = state.myFriends ?? []
         friends.unshift(action.payload)
         state.myFriends = friends
+      }
+    })
+    builder.addCase(readyChatRoom.fulfilled, (state, action) => {
+      if (action.payload !== null) {
+        state.activeChatRoom = action.payload
+      }
+    })
+    builder.addCase(refetchChatRoom.fulfilled, (state, action) => {
+      if (action.payload !== null) {
+        state.activeChatRoom = action.payload
+      }
+    })
+    builder.addCase(getMyChatPreviews.fulfilled, (state, action) => {
+      if (action.payload !== null) {
+        state.myChatPreviews = action.payload
+      }
+    })
+    builder.addCase(enterChatRoom.fulfilled, (state, action) => {
+      if (action.payload !== null) {
+        state.activeChatRoom = action.payload
       }
     })
   },
@@ -41,6 +80,8 @@ export const { loginUser } = userSlice.actions
 export const UserSelectors = {
   selectUser: (state: RootState) => state.user.user,
   selectMyFriends: (state: RootState) => state.user.myFriends,
+  selectActiveChatRoom: (state: RootState) => state.user.activeChatRoom,
+  selectMyChatPreviews: (state: RootState) => state.user.myChatPreviews,
 }
 
 export default userSlice.reducer

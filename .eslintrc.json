@@ -16,13 +16,11 @@
     }
   },
   "rules": {
-    "@typescript-eslint/consistent-type-definitions": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/space-before-function-paren": "off",
     "@typescript-eslint/member-delimiter-style": "off",
     "@typescript-eslint/comma-dangle": "off",
     "@typescript-eslint/strict-boolean-expressions": "warn",
-    "@typescript-eslint/consistent-type-assertions": "warn",
     "@typescript-eslint/no-misused-promises": "off",
     "@typescript-eslint/no-floating-promises": "off",
     "multiline-ternary": "off",
