@@ -5,8 +5,14 @@ import { type StackNavigationProp } from '@react-navigation/stack'
 
 import SearchBar from '../components/SearchBar'
 import { type AppTabStack } from '../navigation/navigation'
-import { getMyChatRooms, getMyFriends, getUser, readyChatRoom } from '../redux/actions/userActions'
-import { type Message, type User } from '../redux/models/userModel'
+import {
+  enterChatRoom,
+  getMyChatPreviews,
+  getMyFriends,
+  getUser,
+  readyChatRoom,
+} from '../redux/actions/userActions'
+import { type ChatRoomPreview, type User } from '../redux/models/userModel'
 import { UserSelectors } from '../redux/slices/userSlice'
 import { useAppDispatch, useAppSelector } from '../redux/store/hooks'
 import { getInitials } from '../util/chatHelper'
@@ -17,18 +23,13 @@ interface Props {
   navigation: ScreenNavigationProp
 }
 
-interface MyChatRoom {
-  friend: User
-  lastMessage: Message | null
-}
-
 const HomeScreen = ({ navigation }: Props) => {
   const dispatch = useAppDispatch()
   const profile = useAppSelector(UserSelectors.selectUser)
   const myFriends = useAppSelector(UserSelectors.selectMyFriends)
-  const myChatRooms = useAppSelector(UserSelectors.selectMyChatRooms)
+  const myChatRooms = useAppSelector(UserSelectors.selectMyChatPreviews)
 
-  const [chatRoomList, setChatRoomList] = React.useState<MyChatRoom[]>([])
+  const [chatPreviewList, setChatPreviewList] = React.useState<ChatRoomPreview[]>([])
 
   if (profile === null) {
     return
@@ -47,13 +48,14 @@ const HomeScreen = ({ navigation }: Props) => {
 
         return {
           friend: friendData.payload as User,
-          lastMessage: room.messages.length > 0 ? room.messages[room.messages.length - 1] : null,
+          lastMessage: room.lastMessage,
+          roomName: room.roomName,
         }
       })
     )
 
     openChatsPromise.then((chats) => {
-      setChatRoomList(chats)
+      setChatPreviewList(chats)
     })
   }, [myChatRooms])
 
@@ -63,10 +65,10 @@ const HomeScreen = ({ navigation }: Props) => {
         return
       }
       await dispatch(getMyFriends({ userUid: profile.uid }))
-      await dispatch(getMyChatRooms({ userUid: profile.uid }))
+      await dispatch(getMyChatPreviews({ userUid: profile.uid }))
     }
     getData()
-  }, [])
+  }, [profile])
 
   React.useEffect(() => {
     getChatRooms()
@@ -117,6 +119,24 @@ const HomeScreen = ({ navigation }: Props) => {
     [dispatch, profile.uid]
   )
 
+  const onChatPreviewPress = React.useCallback(
+    async (preview: ChatRoomPreview) => {
+      try {
+        await dispatch(enterChatRoom({ roomName: preview.roomName }))
+        navigation.getParent()?.navigate('Modals', {
+          screen: 'ChatRoomModal',
+          params: {
+            name: preview.friend.displayName,
+            friendId: preview.friend.uid,
+          },
+        })
+      } catch {
+        // do nothing
+      }
+    },
+    [dispatch]
+  )
+
   const myFriendsList = React.useCallback(() => {
     return (
       <View className="mt-5">
@@ -143,9 +163,14 @@ const HomeScreen = ({ navigation }: Props) => {
     )
   }, [myFriends])
 
-  const renderChatRoomItems = React.useCallback(({ item }: { item: MyChatRoom }) => {
+  const renderChatPreviewItems = React.useCallback(({ item }: { item: ChatRoomPreview }) => {
     return (
-      <View className="flex-row items-center">
+      <TouchableOpacity
+        onPress={async () => {
+          await onChatPreviewPress(item)
+        }}
+        className="flex-row items-center"
+      >
         <View className="rounded-full justify-center items-center mr-2 border h-12 w-12">
           <Text className="font-semibold text-lg">{getInitials(item?.friend?.displayName)}</Text>
         </View>
@@ -155,7 +180,7 @@ const HomeScreen = ({ navigation }: Props) => {
             item.lastMessage?.sender === profile.uid ? 'You' : item.friend.displayName
           }: ${item.lastMessage?.text}`}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
     )
   }, [])
 
@@ -166,9 +191,9 @@ const HomeScreen = ({ navigation }: Props) => {
 
         <FlatList
           className="mt-2"
-          data={chatRoomList}
+          data={chatPreviewList}
           ItemSeparatorComponent={() => <View className="h-5" />}
-          renderItem={renderChatRoomItems}
+          renderItem={renderChatPreviewItems}
         />
       </View>
     )

@@ -78,7 +78,7 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
       setIsLoading(false)
       setTimeout(() => {
         scrollRef.current?.scrollToEnd({ animated: true })
-      }, 50)
+      }, 100)
     }
     getFriendData()
   }, [friendId, dispatch])
@@ -132,7 +132,9 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
 
       return (
         <View className="items-center mb-1">
-          <Text className={'mb-2'}>{dateTime.toLocaleString()}</Text>
+          <Text
+            className={'mt-2 mb-1'}
+          >{`${dateTime.toDateString()} at ${dateTime.toLocaleTimeString()}`}</Text>
           {item.sender === profile.uid ? (
             <View className="flex-row self-end items-end" style={{ maxWidth: '100%' }}>
               <View
@@ -168,7 +170,7 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
 
   const chatView = React.useCallback(() => {
     return (
-      <View className="bg-gray-100 flex-1 px-5 pt-5">
+      <View className="bg-gray-100 flex-1 px-5">
         {isLoading ? (
           <ActivityIndicator size={'large'} className="absolute left-0 right-0 top-0 bottom-0" />
         ) : (

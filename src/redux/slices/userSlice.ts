@@ -2,27 +2,28 @@ import { createSlice } from '@reduxjs/toolkit'
 
 import {
   addFriend,
-  getMyChatRooms,
+  enterChatRoom,
+  getMyChatPreviews,
   getMyFriends,
   logoutUser,
   readyChatRoom,
   refetchChatRoom,
 } from '../actions/userActions'
-import { type ChatRoom, type User } from '../models/userModel'
+import { type ChatPreview, type ChatRoom, type User } from '../models/userModel'
 import { type RootState } from '../store/store'
 
 interface UserState {
   user: User | null
   myFriends: User[] | null
   activeChatRoom: ChatRoom | null
-  myChatRooms: ChatRoom[] | null
+  myChatPreviews: ChatPreview[] | null
 }
 
 const initialState: UserState = {
   user: null,
   myFriends: null,
   activeChatRoom: null,
-  myChatRooms: null,
+  myChatPreviews: null,
 }
 
 export const userSlice = createSlice({
@@ -61,9 +62,14 @@ export const userSlice = createSlice({
         state.activeChatRoom = action.payload
       }
     })
-    builder.addCase(getMyChatRooms.fulfilled, (state, action) => {
+    builder.addCase(getMyChatPreviews.fulfilled, (state, action) => {
       if (action.payload !== null) {
-        state.myChatRooms = action.payload
+        state.myChatPreviews = action.payload
+      }
+    })
+    builder.addCase(enterChatRoom.fulfilled, (state, action) => {
+      if (action.payload !== null) {
+        state.activeChatRoom = action.payload
       }
     })
   },
@@ -75,7 +81,7 @@ export const UserSelectors = {
   selectUser: (state: RootState) => state.user.user,
   selectMyFriends: (state: RootState) => state.user.myFriends,
   selectActiveChatRoom: (state: RootState) => state.user.activeChatRoom,
-  selectMyChatRooms: (state: RootState) => state.user.myChatRooms,
+  selectMyChatPreviews: (state: RootState) => state.user.myChatPreviews,
 }
 
 export default userSlice.reducer

@@ -13,12 +13,11 @@ import {
 import Toast from 'react-native-toast-message'
 
 import { auth, db } from '../../services/firebase'
-import { getMessages } from '../../util/chatHelper'
-import { type ChatRoom, type Message, type User } from '../models/userModel'
+import { getLastMessage, getMessages } from '../../util/chatHelper'
+import { type ChatPreview, type ChatRoom, type Message, type User } from '../models/userModel'
 
 export const logoutUser = createAsyncThunk('user/logout', async () => {
   try {
-    console.log('*** try logout')
     await auth.signOut()
     Toast.show({
       type: 'success',
@@ -226,6 +225,34 @@ export const readyChatRoom = createAsyncThunk(
   }
 )
 
+export const enterChatRoom = createAsyncThunk(
+  'user/enterChatRoom',
+  async ({ roomName }: { roomName: string }): Promise<ChatRoom | null> => {
+    try {
+      const chatRoomsCollection = collection(db, 'chatRooms')
+
+      // Firebase limitation, only 1 array-contains allowed per disjunction
+      const q = query(chatRoomsCollection, where('roomName', '==', roomName))
+
+      const docSnapshot = await getDocs(q)
+      const chatRoomDoc = docSnapshot?.docs[0]
+
+      const messages: Message[] = await getMessages(chatRoomDoc.ref)
+      const chatRoom: ChatRoom = { roomName, messages }
+
+      return chatRoom
+    } catch (err) {
+      console.log('*** err: ', err)
+      Toast.show({
+        type: 'error',
+        text1: 'Error!',
+        text2: 'An error occured while trying to access your chat room. Please try again later',
+      })
+      return null
+    }
+  }
+)
+
 export const sendMessage = createAsyncThunk(
   'user/sendMessage',
   async ({
@@ -303,24 +330,24 @@ export const refetchChatRoom = createAsyncThunk(
   }
 )
 
-export const getMyChatRooms = createAsyncThunk(
-  'user/getMyChatRooms',
-  async ({ userUid }: { userUid: string }): Promise<ChatRoom[]> => {
+export const getMyChatPreviews = createAsyncThunk(
+  'user/getMyChatPreviews',
+  async ({ userUid }: { userUid: string }): Promise<ChatPreview[] | null> => {
     const chatRoomsCollection = collection(db, 'chatRooms')
 
     const q = query(chatRoomsCollection, where('participants', 'array-contains', userUid))
 
     const chatRoomsSnapshot = await getDocs(q)
 
-    const chatRooms = await Promise.all(
+    const chatPreviews = await Promise.all(
       chatRoomsSnapshot.docs.map(async (doc) => {
         const chatRoom = doc.data()
-        const messages = await getMessages(doc.ref)
-
-        return { roomName: chatRoom.roomName, messages: messages.length > 0 ? messages : [] }
+        const message = await getLastMessage(doc.ref)
+        const chatPreview: ChatPreview = { roomName: chatRoom.roomName, lastMessage: message }
+        return chatPreview
       })
     )
 
-    return chatRooms.filter((room) => room.messages.length > 0)
+    return chatPreviews.filter((room) => room.lastMessage !== null)
   }
 )

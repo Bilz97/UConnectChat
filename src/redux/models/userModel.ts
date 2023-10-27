@@ -16,3 +16,14 @@ export interface ChatRoom {
   roomName: string
   messages: Message[]
 }
+
+export interface ChatPreview {
+  roomName: string
+  lastMessage: Message | null
+}
+
+export interface ChatRoomPreview {
+  friend: User
+  lastMessage: Message | null
+  roomName: string
+}
