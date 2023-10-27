@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 
 import {
   addFriend,
+  getMyChatRooms,
   getMyFriends,
   logoutUser,
   readyChatRoom,
@@ -10,13 +11,23 @@ import {
 import { type ChatRoom, type User } from '../models/userModel'
 import { type RootState } from '../store/store'
 
+interface UserState {
+  user: User | null
+  myFriends: User[] | null
+  activeChatRoom: ChatRoom | null
+  myChatRooms: ChatRoom[] | null
+}
+
+const initialState: UserState = {
+  user: null,
+  myFriends: null,
+  activeChatRoom: null,
+  myChatRooms: null,
+}
+
 export const userSlice = createSlice({
   name: 'user',
-  initialState: {
-    user: {} as User,
-    myFriends: [] as User[],
-    activeChatRoom: {} as ChatRoom,
-  },
+  initialState,
   reducers: {
     loginUser: (state, action) => {
       // Save user state when login is successful
@@ -26,7 +37,7 @@ export const userSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(logoutUser.fulfilled, (state) => {
       // Reset the user state when logout is successful
-      state.user = {} as User
+      state.user = null
     })
     builder.addCase(getMyFriends.fulfilled, (state, action) => {
       if (action.payload !== null) {
@@ -35,21 +46,24 @@ export const userSlice = createSlice({
     })
     builder.addCase(addFriend.fulfilled, (state, action) => {
       if (action.payload !== null) {
-        const friends = state.myFriends
+        const friends = state.myFriends ?? []
         friends.unshift(action.payload)
         state.myFriends = friends
       }
     })
     builder.addCase(readyChatRoom.fulfilled, (state, action) => {
       if (action.payload !== null) {
-        const chatRoom = action.payload
-        state.activeChatRoom = chatRoom
+        state.activeChatRoom = action.payload
       }
     })
     builder.addCase(refetchChatRoom.fulfilled, (state, action) => {
       if (action.payload !== null) {
-        const chatRoom = action.payload
-        state.activeChatRoom = chatRoom
+        state.activeChatRoom = action.payload
+      }
+    })
+    builder.addCase(getMyChatRooms.fulfilled, (state, action) => {
+      if (action.payload !== null) {
+        state.myChatRooms = action.payload
       }
     })
   },
@@ -61,6 +75,7 @@ export const UserSelectors = {
   selectUser: (state: RootState) => state.user.user,
   selectMyFriends: (state: RootState) => state.user.myFriends,
   selectActiveChatRoom: (state: RootState) => state.user.activeChatRoom,
+  selectMyChatRooms: (state: RootState) => state.user.myChatRooms,
 }
 
 export default userSlice.reducer

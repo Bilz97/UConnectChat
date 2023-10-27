@@ -5,7 +5,6 @@ import {
   doc,
   getDoc,
   getDocs,
-  orderBy,
   query,
   serverTimestamp,
   setDoc,
@@ -14,6 +13,7 @@ import {
 import Toast from 'react-native-toast-message'
 
 import { auth, db } from '../../services/firebase'
+import { getMessages } from '../../util/chatHelper'
 import { type ChatRoom, type Message, type User } from '../models/userModel'
 
 export const logoutUser = createAsyncThunk('user/logout', async () => {
@@ -194,21 +194,8 @@ export const readyChatRoom = createAsyncThunk(
         const docSnapshot = await getDocs(q)
         const chatRoomDoc = docSnapshot?.docs[0]
 
-        const messagesCollection = collection(chatRoomDoc.ref, 'messages')
-        const mQ = query(messagesCollection, orderBy('timestamp'))
-        const messagesQuerySnapshot = await getDocs(mQ)
-        const messages: Message[] = []
-
-        messagesQuerySnapshot.forEach((doc) => {
-          const messageData = doc.data()
-
-          // Serialize the Firestore timestamp to ISO string
-          const timestampISO = messageData.timestamp.toDate().toISOString()
-          const serializedMessage = { ...messageData, timestamp: timestampISO }
-
-          messages.push(serializedMessage as Message)
-        })
-        const chatRoom: ChatRoom = { id: chatRoomData.roomName, messages }
+        const messages: Message[] = await getMessages(chatRoomDoc.ref)
+        const chatRoom: ChatRoom = { roomName: chatRoomData.roomName, messages }
 
         return chatRoom
       }
@@ -225,7 +212,7 @@ export const readyChatRoom = createAsyncThunk(
       // We use setDoc because we want to specify the document ID
       await setDoc(docRef, chatRoomData)
 
-      const chatRoom: ChatRoom = { id: chatRoomData.roomName, messages: [] }
+      const chatRoom: ChatRoom = { roomName: chatRoomData.roomName, messages: [] }
       return chatRoom
     } catch (err) {
       console.log('*** err: ', err)
@@ -300,7 +287,7 @@ export const getUser = createAsyncThunk(
 )
 
 export const refetchChatRoom = createAsyncThunk(
-  'user/getMessages',
+  'user/refetchChatRoom',
   async ({ roomId }: { roomId: string }): Promise<ChatRoom> => {
     const chatRoomsCollection = collection(db, 'chatRooms')
 
@@ -309,22 +296,31 @@ export const refetchChatRoom = createAsyncThunk(
     const docSnapshot = await getDocs(q)
     const chatRoomDoc = docSnapshot?.docs[0]
 
-    const messagesCollection = collection(chatRoomDoc.ref, 'messages')
-    const mQ = query(messagesCollection, orderBy('timestamp'))
-    const messagesQuerySnapshot = await getDocs(mQ)
-    const messages: Message[] = []
-
-    messagesQuerySnapshot.forEach((doc) => {
-      const messageData = doc.data()
-
-      // Serialize the Firestore timestamp to ISO string
-      const timestampISO = messageData.timestamp.toDate().toISOString()
-      const serializedMessage = { ...messageData, timestamp: timestampISO }
-
-      messages.push(serializedMessage as Message)
-    })
-    const chatRoom: ChatRoom = { id: roomId, messages }
+    const messages: Message[] = await getMessages(chatRoomDoc.ref)
+    const chatRoom: ChatRoom = { roomName: roomId, messages }
 
     return chatRoom
+  }
+)
+
+export const getMyChatRooms = createAsyncThunk(
+  'user/getMyChatRooms',
+  async ({ userUid }: { userUid: string }): Promise<ChatRoom[]> => {
+    const chatRoomsCollection = collection(db, 'chatRooms')
+
+    const q = query(chatRoomsCollection, where('participants', 'array-contains', userUid))
+
+    const chatRoomsSnapshot = await getDocs(q)
+
+    const chatRooms = await Promise.all(
+      chatRoomsSnapshot.docs.map(async (doc) => {
+        const chatRoom = doc.data()
+        const messages = await getMessages(doc.ref)
+
+        return { roomName: chatRoom.roomName, messages: messages.length > 0 ? messages : [] }
+      })
+    )
+
+    return chatRooms.filter((room) => room.messages.length > 0)
   }
 )

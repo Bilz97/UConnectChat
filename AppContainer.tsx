@@ -23,16 +23,15 @@ export default function App() {
 
   const dispatch = useAppDispatch()
 
-  // check at page load if a user is authenticated
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (userAuth) => {
-      if (userAuth) {
-        // user is logged in, send the user's details to redux, store the current user in the state
+      if (userAuth !== null) {
+        // User is logged in, send the user's details to redux, store the current user in the state
         dispatch(
           loginUser({
             email: userAuth.email,
             uid: userAuth.uid,
-            displayName: userAuth?.displayName,
+            displayName: userAuth.displayName,
             photoUrl: userAuth?.photoURL ?? null,
           })
         )
@@ -61,7 +60,7 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={user?.email ? 'App' : 'Auth'}>
+      <Stack.Navigator initialRouteName={user === null ? 'Auth' : 'App'}>
         <Stack.Screen name="Auth" component={AuthScreen} options={{ headerShown: false }} />
         <Stack.Screen name="App" component={AppTabStack} options={{ headerShown: false }} />
         <Stack.Screen name="Modals" component={ModalStack} options={{ headerShown: false }} />

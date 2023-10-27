@@ -15,12 +15,15 @@ const SearchBar = () => {
   const [searchResults, setSearchResults] = React.useState<User[]>([])
   const profile = useAppSelector(UserSelectors.selectUser)
 
+  if (profile == null) {
+    return
+  }
+
   const { values, handleChange, handleSubmit } = useFormik({
     initialValues: {
       search: '',
     },
     onSubmit: async (value) => {
-      console.log('*** search: ', value.search)
       if (value.search.length < 3) {
         setSearchResults([])
         return
@@ -51,7 +54,7 @@ const SearchBar = () => {
         <TextInput
           maxLength={20}
           className="px-2 bg-gray-50 h-12 flex-1 bg-transparent"
-          placeholder={'search for friends'}
+          placeholder={'search for new friends'}
           onChangeText={handleChange('search')}
           value={values.search}
         />

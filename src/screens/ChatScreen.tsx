@@ -23,6 +23,7 @@ import { getUser, refetchChatRoom, sendMessage } from '../redux/actions/userActi
 import { type Message, type User } from '../redux/models/userModel'
 import { UserSelectors } from '../redux/slices/userSlice'
 import { useAppDispatch, useAppSelector } from '../redux/store/hooks'
+import { getInitials } from '../util/chatHelper'
 
 type ScreenRouteProp = RouteProp<ModalStack, 'ChatRoomModal'>
 type ScreenNavigationProp = StackNavigationProp<ModalStack, 'ChatRoomModal'>
@@ -43,9 +44,10 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
 
   const dispatch = useAppDispatch()
 
-  const [isLoading, setIsLoading] = React.useState(false)
+  const [isSendingMessage, setIsSendingMessage] = React.useState(false)
   const [friendData, setFriendData] = React.useState<User | null>(null)
   const scrollRef = React.useRef<FlatList>(null)
+  const [isLoading, setIsLoading] = React.useState(false)
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -68,12 +70,16 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
       if (!friendId) {
         return
       }
+      setIsLoading(true)
       const user = await dispatch(getUser({ userUid: friendId }))
       if (user.payload !== null && user.payload !== undefined) {
         setFriendData(user.payload as User)
       }
+      setIsLoading(false)
+      setTimeout(() => {
+        scrollRef.current?.scrollToEnd({ animated: true })
+      }, 50)
     }
-
     getFriendData()
   }, [friendId, dispatch])
 
@@ -81,9 +87,13 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
     if (scrollRef.current !== null) {
       setTimeout(() => {
         scrollRef.current?.scrollToEnd({ animated: true })
-      }, 200)
+      }, 100)
     }
   }, [chatRoom])
+
+  if (profile === null || chatRoom == null) {
+    return
+  }
 
   const { values, handleSubmit, handleChange, resetForm } = useFormik({
     initialValues: {
@@ -93,7 +103,7 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
       if (!friendId) {
         return
       }
-      setIsLoading(true)
+      setIsSendingMessage(true)
       if (formValues.message?.length === 0) {
         Toast.show({
           type: 'error',
@@ -105,37 +115,21 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
           sendMessage({
             userUid: profile.uid,
             displayName: profile.displayName,
-            roomId: chatRoom.id,
+            roomId: chatRoom.roomName,
             message: formValues.message,
           })
         )
-        await dispatch(refetchChatRoom({ roomId: chatRoom.id }))
+        await dispatch(refetchChatRoom({ roomId: chatRoom.roomName }))
       }
       resetForm()
-      setIsLoading(false)
+      setIsSendingMessage(false)
     },
   })
-
-  const getInitials = React.useCallback((text?: string): string => {
-    if (!text) return ''
-
-    const initials = text
-      .split(' ')
-      .map((word) => word[0])
-      .join('')
-      .toUpperCase()
-
-    return initials
-  }, [])
 
   const renderItem = React.useCallback(
     ({ item }: { item: Message }) => {
       const dateTime = new Date(item.timestamp)
-      // const currentDate = new Date()
-      // const isToday =
-      //   dateTime.getDay() === currentDate.getDay() &&
-      //   dateTime.getMonth() === currentDate.getMonth() &&
-      //   dateTime.getFullYear() === currentDate.getFullYear()
+
       return (
         <View className="items-center mb-1">
           <Text className={'mb-2'}>{dateTime.toLocaleString()}</Text>
@@ -175,16 +169,20 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
   const chatView = React.useCallback(() => {
     return (
       <View className="bg-gray-100 flex-1 px-5 pt-5">
-        <FlatList
-          ref={scrollRef}
-          showsVerticalScrollIndicator={false}
-          data={chatRoom.messages}
-          ItemSeparatorComponent={() => <View className="h-3" />}
-          renderItem={renderItem}
-        />
+        {isLoading ? (
+          <ActivityIndicator size={'large'} className="absolute left-0 right-0 top-0 bottom-0" />
+        ) : (
+          <FlatList
+            ref={scrollRef}
+            showsVerticalScrollIndicator={false}
+            data={chatRoom.messages}
+            ItemSeparatorComponent={() => <View className="h-3" />}
+            renderItem={renderItem}
+          />
+        )}
       </View>
     )
-  }, [chatRoom.messages, friendData])
+  }, [chatRoom.messages, friendData, isLoading])
 
   const chatInputView = React.useCallback(() => {
     return (
@@ -196,7 +194,7 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
           onChangeText={handleChange('message')}
           value={values.message}
         />
-        {isLoading ? (
+        {isSendingMessage ? (
           <ActivityIndicator size={'small'} />
         ) : (
           <EvilIcons
@@ -210,7 +208,7 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
         )}
       </View>
     )
-  }, [values, handleChange, isLoading])
+  }, [values, handleChange, isSendingMessage])
 
   return (
     <SafeAreaView className="flex-1 p-5 bg-white">

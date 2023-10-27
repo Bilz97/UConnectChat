@@ -1,18 +1,18 @@
-export type User = {
+export interface User {
   email: string
   uid: string
   displayName: string
   photoUrl?: string
 }
 
-export type Message = {
+export interface Message {
   sender: string
   displayName: string
   text: string
   timestamp: string
 }
 
-export type ChatRoom = {
-  id: string
+export interface ChatRoom {
+  roomName: string
   messages: Message[]
 }
