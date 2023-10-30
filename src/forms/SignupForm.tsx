@@ -35,7 +35,6 @@ const SignupForm = ({
       confirmPassword: '',
     },
     onSubmit: async (formValues) => {
-      // TODO add auth checks later
       if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(formValues.email)) {
         Toast.show({
           type: 'error',
@@ -69,7 +68,12 @@ const SignupForm = ({
 
             await dispatch(
               storeUserData({
-                user: { email: user.email, uid: user.uid, displayName, photoUrl: '' },
+                user: {
+                  email: user.email,
+                  uid: user.uid,
+                  displayName,
+                  photoUrl: user?.photoURL ?? null,
+                },
               })
             )
 

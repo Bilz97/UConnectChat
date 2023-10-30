@@ -2,7 +2,7 @@ export interface User {
   email: string
   uid: string
   displayName: string
-  photoUrl?: string
+  photoUrl: string | null
 }
 
 export interface Message {
