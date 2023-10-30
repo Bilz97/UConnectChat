@@ -161,11 +161,13 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
               >
                 <Text className={'flex-wrap'}>{item.text}</Text>
               </View>
-              <ProfileAvatar profile={profile} isCurrentUser={true} />
+              <ProfileAvatar profile={profile} addLeftPadding={true} customSize={null} />
             </View>
           ) : (
             <View className="flex-row self-start items-end" style={{ maxWidth: '100%' }}>
-              {friendData !== null && <ProfileAvatar profile={friendData} isCurrentUser={false} />}
+              {friendData !== null && (
+                <ProfileAvatar profile={friendData} addLeftPadding={false} customSize={null} />
+              )}
               <View
                 className={'mr-1 border-0.5 p-2 rounded-lg bg-gray-50'}
                 style={{ maxWidth: '80%' }}

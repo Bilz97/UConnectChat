@@ -62,12 +62,19 @@ const LoginForm = ({
           })
           .catch((error) => {
             const errorMessage = error.message
-
-            Toast.show({
-              type: 'error',
-              text1: 'Error!',
-              text2: errorMessage,
-            })
+            if (error.code === 'auth/invalid-login-credentials') {
+              Toast.show({
+                type: 'error',
+                text1: 'Error!',
+                text2: 'Invalid email or password.',
+              })
+            } else {
+              Toast.show({
+                type: 'error',
+                text1: 'Error!',
+                text2: errorMessage,
+              })
+            }
           })
         setLoading(false)
       }

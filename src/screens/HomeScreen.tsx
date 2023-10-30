@@ -10,13 +10,10 @@ import {
   View,
 } from 'react-native'
 
-import { Feather } from '@expo/vector-icons'
 import { type StackNavigationProp } from '@react-navigation/stack'
-import * as ImagePicker from 'expo-image-picker'
-import { updateProfile } from 'firebase/auth'
-import Toast from 'react-native-toast-message'
 
-import SearchBar from '../components/SearchBar'
+import ProfileAvatar from '../components/ProfileAvatar'
+import SearchForFriends from '../components/SearchForFriends'
 import { type AppTabStack } from '../navigation/navigation'
 import {
   enterChatRoom,
@@ -24,12 +21,10 @@ import {
   getMyFriends,
   getUser,
   readyChatRoom,
-  updateProfilePhoto,
 } from '../redux/actions/userActions'
 import { type ChatRoomPreview, type User } from '../redux/models/userModel'
-import { updateUserPhoto, UserSelectors } from '../redux/slices/userSlice'
+import { UserSelectors } from '../redux/slices/userSlice'
 import { useAppDispatch, useAppSelector } from '../redux/store/hooks'
-import { auth } from '../services/firebase'
 import { getInitials } from '../util/chatHelper'
 
 type ScreenNavigationProp = StackNavigationProp<AppTabStack, 'Home'>
@@ -43,7 +38,6 @@ const HomeScreen = ({ navigation }: Props) => {
   const profile = useAppSelector(UserSelectors.selectUser)
   const myFriends = useAppSelector(UserSelectors.selectMyFriends)
   const myChatPreviews = useAppSelector(UserSelectors.selectMyChatPreviews)
-  const [isPhotoLoading, setIsPhotoLoading] = React.useState(false)
   const [chatPreviewList, setChatPreviewList] = React.useState<ChatRoomPreview[]>([])
   const [isLoading, setIsLoading] = React.useState(false)
 
@@ -246,80 +240,28 @@ const HomeScreen = ({ navigation }: Props) => {
         )}
       </View>
     )
-  }, [chatPreviewList])
-
-  const pickImage = React.useCallback(async () => {
-    setIsPhotoLoading(true)
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [3, 3],
-      quality: 1,
-    })
-
-    console.log(result)
-
-    if (!result.canceled && result.assets?.[0].type === 'image') {
-      const photoUrl = result.assets[0].uri
-
-      const user = auth.currentUser
-      if (user !== null) {
-        try {
-          await updateProfile(user, {
-            photoURL: photoUrl,
-          })
-
-          await dispatch(updateProfilePhoto({ userUid: profile.uid, photoUrl }))
-
-          dispatch(updateUserPhoto(photoUrl))
-        } catch {
-          Toast.show({
-            type: 'error',
-            text1: 'Error!',
-            text2: 'Could not save profile photo. Please try again later.',
-          })
-        }
-      } else {
-        Toast.show({
-          type: 'error',
-          text1: 'Error!',
-          text2: 'Could not save profile photo. Please try again later.',
-        })
-      }
-    }
-    setIsPhotoLoading(false)
-  }, [dispatch, profile, auth])
+  }, [chatPreviewList, isLoading])
 
   const welcomeMessage = React.useCallback(() => {
     return (
       <View className="flex-row items-center mb-5">
         <TouchableOpacity
-          disabled={isPhotoLoading}
-          onPress={pickImage}
-          className="h-20 w-20 border items-center justify-center rounded-full"
+          onPress={() => {
+            navigation.navigate('Settings')
+          }}
         >
-          {isPhotoLoading ? (
-            <ActivityIndicator size={'small'} />
-          ) : profile?.photoUrl !== null ? (
-            <Image
-              source={{ uri: profile.photoUrl }}
-              className="w-full h-full rounded-full"
-              resizeMode="stretch"
-            />
-          ) : (
-            <Feather name="user-plus" size={48} />
-          )}
+          <ProfileAvatar profile={profile} addLeftPadding={false} customSize={20} />
         </TouchableOpacity>
-        <Text className="px-2 font-bold text-lg">{`Welcome ${profile.displayName}`}</Text>
+        <Text className="font-bold text-lg">{`Hello ${profile.displayName}`}</Text>
       </View>
     )
-  }, [profile?.photoUrl, isPhotoLoading])
+  }, [profile?.photoUrl])
 
   return (
     <SafeAreaView className="flex-1 m-5">
       <View className={'flex-1'}>
         {welcomeMessage()}
-        <SearchBar />
+        <SearchForFriends />
         {myFriendsList()}
         {myMessages()}
       </View>

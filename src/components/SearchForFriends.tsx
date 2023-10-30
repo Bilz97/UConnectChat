@@ -4,13 +4,14 @@ import { FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native'
 
 import { EvilIcons } from '@expo/vector-icons'
 import { useFormik } from 'formik'
+import Toast from 'react-native-toast-message'
 
 import { addFriend, searchUsers } from '../redux/actions/userActions'
 import { type User } from '../redux/models/userModel'
 import { UserSelectors } from '../redux/slices/userSlice'
 import { useAppDispatch, useAppSelector } from '../redux/store/hooks'
 
-const SearchBar = () => {
+const SearchForFriends = () => {
   const dispatch = useAppDispatch()
   const [searchResults, setSearchResults] = React.useState<User[]>([])
   const profile = useAppSelector(UserSelectors.selectUser)
@@ -19,7 +20,7 @@ const SearchBar = () => {
     return
   }
 
-  const { values, handleChange, handleSubmit } = useFormik({
+  const { values, handleChange, handleSubmit, resetForm } = useFormik({
     initialValues: {
       search: '',
     },
@@ -29,12 +30,26 @@ const SearchBar = () => {
         return
       }
       try {
-        const users = await dispatch(
+        const usersData = await dispatch(
           searchUsers({ userUid: profile.uid, displayName: value.search })
         )
-        setSearchResults(users.payload as User[])
-      } catch (err) {
-        console.log('err: ', err)
+        const users = usersData.payload as User[]
+
+        setSearchResults(users)
+        if (users.length === 0) {
+          Toast.show({
+            type: 'info',
+            text1: 'User not found',
+            text2: 'There appears to be no user with this name.',
+          })
+        }
+        resetForm()
+      } catch {
+        Toast.show({
+          type: 'error',
+          text1: 'Error!',
+          text2: 'Something went wrong. Please try again later.',
+        })
       }
     },
   })
@@ -42,7 +57,6 @@ const SearchBar = () => {
   const onFriendPress = React.useCallback(
     async (friendUid: string) => {
       await dispatch(addFriend({ userUid: profile.uid, friendUserId: friendUid }))
-
       setSearchResults([])
     },
     [dispatch]
@@ -97,4 +111,4 @@ const SearchBar = () => {
   )
 }
 
-export default memo(SearchBar)
+export default memo(SearchForFriends)

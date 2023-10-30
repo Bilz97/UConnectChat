@@ -7,14 +7,17 @@ import { getInitials } from '../util/chatHelper'
 
 interface Props {
   profile: User
-  isCurrentUser: boolean
+  addLeftPadding: boolean
+  customSize: number | null
 }
-const ProfileAvatar = ({ profile, isCurrentUser }: Props) => {
+const ProfileAvatar = ({ profile, addLeftPadding, customSize: size }: Props) => {
+  const imageSize: string = size !== null ? `h-${size} w-${size}` : 'h-12 w-12'
+
   return (
     <View
       className={`rounded-full justify-center items-center ${
-        isCurrentUser ? 'ml-2' : 'mr-2'
-      } border h-12 w-12`}
+        addLeftPadding ? 'ml-2' : 'mr-2'
+      } border ${imageSize}`}
     >
       {profile?.photoUrl !== null ? (
         <Image
@@ -23,7 +26,9 @@ const ProfileAvatar = ({ profile, isCurrentUser }: Props) => {
           resizeMode="stretch"
         />
       ) : (
-        <Text className="font-semibold text-lg">{getInitials(profile?.displayName)}</Text>
+        <Text className={`font-semibold ${size !== null && size > 15 ? 'text-2xl' : 'text-lg'}`}>
+          {getInitials(profile?.displayName)}
+        </Text>
       )}
     </View>
   )
