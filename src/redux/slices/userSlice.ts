@@ -31,13 +31,16 @@ export const userSlice = createSlice({
   initialState,
   reducers: {
     loginUser: (state, action) => {
-      // Save user state when login is successful
       state.user = action.payload
+    },
+    updateUserPhoto: (state, action) => {
+      if (state.user !== null) {
+        state.user.photoUrl = action.payload
+      }
     },
   },
   extraReducers: (builder) => {
     builder.addCase(logoutUser.fulfilled, (state) => {
-      // Reset the user state when logout is successful
       state.user = null
     })
     builder.addCase(getMyFriends.fulfilled, (state, action) => {
@@ -75,7 +78,7 @@ export const userSlice = createSlice({
   },
 })
 
-export const { loginUser } = userSlice.actions
+export const { loginUser, updateUserPhoto } = userSlice.actions
 
 export const UserSelectors = {
   selectUser: (state: RootState) => state.user.user,

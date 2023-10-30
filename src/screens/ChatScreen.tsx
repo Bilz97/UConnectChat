@@ -18,12 +18,17 @@ import { type StackNavigationProp } from '@react-navigation/stack'
 import { useFormik } from 'formik'
 import Toast from 'react-native-toast-message'
 
+import ProfileAvatar from '../components/ProfileAvatar'
 import { type ModalStack } from '../navigation/navigation'
-import { getUser, refetchChatRoom, sendMessage } from '../redux/actions/userActions'
+import {
+  getMyChatPreviews,
+  getUser,
+  refetchChatRoom,
+  sendMessage,
+} from '../redux/actions/userActions'
 import { type Message, type User } from '../redux/models/userModel'
 import { UserSelectors } from '../redux/slices/userSlice'
 import { useAppDispatch, useAppSelector } from '../redux/store/hooks'
-import { getInitials } from '../util/chatHelper'
 
 type ScreenRouteProp = RouteProp<ModalStack, 'ChatRoomModal'>
 type ScreenNavigationProp = StackNavigationProp<ModalStack, 'ChatRoomModal'>
@@ -95,12 +100,25 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
     return
   }
 
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', async () => {
+      await dispatch(getMyChatPreviews({ userUid: profile.uid }))
+    })
+
+    return unsubscribe
+  }, [profile.uid, dispatch])
+
   const { values, handleSubmit, handleChange, resetForm } = useFormik({
     initialValues: {
       message: '',
     },
     onSubmit: async (formValues) => {
       if (!friendId) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error!',
+          text2: 'Something went wrong. Please try again later.',
+        })
         return
       }
       setIsSendingMessage(true)
@@ -143,17 +161,11 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
               >
                 <Text className={'flex-wrap'}>{item.text}</Text>
               </View>
-              <View className="rounded-full justify-center items-center ml-2 border h-12 w-12">
-                <Text className="font-semibold text-lg">{getInitials(profile?.displayName)}</Text>
-              </View>
+              <ProfileAvatar profile={profile} isCurrentUser={true} />
             </View>
           ) : (
             <View className="flex-row self-start items-end" style={{ maxWidth: '100%' }}>
-              <View className="rounded-full justify-center items-center mr-2 border h-12 w-12">
-                <Text className="font-semibold text-lg">
-                  {getInitials(friendData?.displayName)}
-                </Text>
-              </View>
+              {friendData !== null && <ProfileAvatar profile={friendData} isCurrentUser={false} />}
               <View
                 className={'mr-1 border-0.5 p-2 rounded-lg bg-gray-50'}
                 style={{ maxWidth: '80%' }}
@@ -165,13 +177,13 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
         </View>
       )
     },
-    [profile.uid, profile.displayName, friendData?.displayName]
+    [profile, friendData]
   )
 
   const chatView = React.useCallback(() => {
     return (
       <View className="bg-gray-100 flex-1 px-5">
-        {isLoading ? (
+        {isLoading || friendData == null ? (
           <ActivityIndicator size={'large'} className="absolute left-0 right-0 top-0 bottom-0" />
         ) : (
           <FlatList

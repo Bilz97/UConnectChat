@@ -8,6 +8,7 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  updateDoc,
   where,
 } from 'firebase/firestore'
 import Toast from 'react-native-toast-message'
@@ -37,7 +38,7 @@ export const storeUserData = createAsyncThunk(
   async ({ user }: { user: User }) => {
     const usersCollection = collection(db, 'users')
 
-    const docRef = doc(db, `users/${user.uid}`)
+    const docRef = doc(db, 'users', user.uid)
     const docSnapshot = await getDoc(docRef)
 
     if (!docSnapshot.exists()) {
@@ -124,7 +125,7 @@ export const getMyFriends = createAsyncThunk(
   'user/myFriends',
   async ({ userUid }: { userUid: string }): Promise<User[]> => {
     try {
-      const docRef = doc(db, `friends/${userUid}`)
+      const docRef = doc(db, 'friends', userUid)
       const docSnapshot = await getDoc(docRef)
 
       if (docSnapshot.exists()) {
@@ -214,11 +215,10 @@ export const readyChatRoom = createAsyncThunk(
       const chatRoom: ChatRoom = { roomName: chatRoomData.roomName, messages: [] }
       return chatRoom
     } catch (err) {
-      console.log('*** err: ', err)
       Toast.show({
         type: 'error',
         text1: 'Error!',
-        text2: 'An error occured when adding your friend. Please try again.',
+        text2: 'An error occured while creating the chatroom. Please try again.',
       })
       return null
     }
@@ -241,8 +241,7 @@ export const enterChatRoom = createAsyncThunk(
       const chatRoom: ChatRoom = { roomName, messages }
 
       return chatRoom
-    } catch (err) {
-      console.log('*** err: ', err)
+    } catch {
       Toast.show({
         type: 'error',
         text1: 'Error!',
@@ -349,5 +348,24 @@ export const getMyChatPreviews = createAsyncThunk(
     )
 
     return chatPreviews.filter((room) => room.lastMessage !== null)
+  }
+)
+
+export const updateProfilePhoto = createAsyncThunk(
+  'user/updateProfilePhoto',
+  async ({ userUid, photoUrl }: { userUid: string; photoUrl: string }): Promise<boolean> => {
+    const usersCollection = collection(db, 'users')
+
+    const q = query(usersCollection, where('uid', '==', userUid))
+
+    const userSnapshots = await getDocs(q)
+    const userDoc = userSnapshots.docs?.[0]
+
+    if (userDoc?.exists()) {
+      await updateDoc(userDoc.ref, { photoUrl })
+
+      return true
+    }
+    return false
   }
 )
