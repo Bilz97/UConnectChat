@@ -8,21 +8,25 @@ import { updateProfile } from 'firebase/auth'
 import Toast from 'react-native-toast-message'
 
 import NavBarOption from '../components/NavBarOption'
-import { type AppTabStack } from '../navigation/navigation'
+import { type SettingsStack } from '../navigation/navigation'
 import { logoutUser, updateProfilePhoto } from '../redux/actions/userActions'
 import { updateUserPhoto, UserSelectors } from '../redux/slices/userSlice'
 import { useAppDispatch, useAppSelector } from '../redux/store/hooks'
 import { auth } from '../services/firebase'
 
-type SettingsScreenNavigationProp = StackNavigationProp<AppTabStack, 'Settings'>
+type SettingsScreenNavigationProp = StackNavigationProp<SettingsStack, 'Settings'>
 
-const SettingsScreen = ({ navigation }: { navigation: SettingsScreenNavigationProp }) => {
+interface Props {
+  navigation: SettingsScreenNavigationProp
+}
+
+const SettingsScreen = ({ navigation }: Props) => {
   const dispatch = useAppDispatch()
 
   const [isPhotoLoading, setIsPhotoLoading] = React.useState(false)
   const profile = useAppSelector(UserSelectors.selectUser)
 
-  if (!profile) {
+  if (profile == null) {
     return
   }
 
@@ -45,13 +49,14 @@ const SettingsScreen = ({ navigation }: { navigation: SettingsScreenNavigationPr
       const user = auth.currentUser
       if (user !== null) {
         try {
-          await updateProfile(user, {
-            photoURL: photoUrl,
-          })
+          const response = await dispatch(updateProfilePhoto({ userUid: profile.uid, photoUrl }))
 
-          await dispatch(updateProfilePhoto({ userUid: profile.uid, photoUrl }))
-
-          dispatch(updateUserPhoto(photoUrl))
+          if (response.meta.requestStatus === 'fulfilled') {
+            await updateProfile(user, {
+              photoURL: photoUrl,
+            })
+            dispatch(updateUserPhoto(photoUrl))
+          }
         } catch {
           Toast.show({
             type: 'error',
@@ -102,7 +107,7 @@ const SettingsScreen = ({ navigation }: { navigation: SettingsScreenNavigationPr
         <NavBarOption
           title="Personal information"
           onPress={() => {
-            console.log('PI')
+            navigation.push('PersonalInformation')
           }}
         />
         <NavBarOption title="Logout" onPress={logout} />

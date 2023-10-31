@@ -4,13 +4,13 @@ import { type NavigatorScreenParams } from '@react-navigation/native'
 
 export type RootStack = {
   Auth: undefined
-  App: NavigatorScreenParams<AppTabStack>
-  Modals: NavigatorScreenParams<ModalStack>
+  AppStack: NavigatorScreenParams<AppTabStack>
+  ModalStack: NavigatorScreenParams<ModalStack>
 }
 
 export type AppTabStack = {
   Home: undefined
-  Settings: undefined
+  SettingsStack: NavigatorScreenParams<SettingsStack>
 }
 
 export type ModalStack = {
@@ -18,4 +18,9 @@ export type ModalStack = {
     name?: string
     friendId?: string
   }
+}
+
+export type SettingsStack = {
+  Settings: undefined
+  PersonalInformation: undefined
 }

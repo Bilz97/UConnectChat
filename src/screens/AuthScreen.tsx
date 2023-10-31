@@ -10,7 +10,10 @@ import { type RootStack } from '../navigation/navigation'
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStack, 'Auth'>
 
-const AuthScreen = ({ navigation }: { navigation: LoginScreenNavigationProp }) => {
+interface Props {
+  navigation: LoginScreenNavigationProp
+}
+const AuthScreen = ({ navigation }: Props) => {
   const [isSignup, setIsSignup] = React.useState(false)
 
   return (

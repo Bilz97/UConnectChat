@@ -98,7 +98,7 @@ const HomeScreen = ({ navigation }: Props) => {
               try {
                 await dispatch(readyChatRoom({ userUid: profile.uid, friendUserId: friend.uid }))
 
-                navigation.getParent()?.navigate('Modals', {
+                navigation.getParent()?.navigate('ModalStack', {
                   screen: 'ChatRoomModal',
                   params: {
                     name: friend.displayName,
@@ -135,7 +135,7 @@ const HomeScreen = ({ navigation }: Props) => {
     async (preview: ChatRoomPreview) => {
       try {
         await dispatch(enterChatRoom({ roomName: preview.roomName }))
-        navigation.getParent()?.navigate('Modals', {
+        navigation.getParent()?.navigate('ModalStack', {
           screen: 'ChatRoomModal',
           params: {
             name: preview.friend.displayName,
@@ -247,15 +247,22 @@ const HomeScreen = ({ navigation }: Props) => {
       <View className="flex-row items-center mb-5">
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate('Settings')
+            navigation.navigate('SettingsStack', {
+              screen: 'Settings',
+            })
           }}
         >
-          <ProfileAvatar profile={profile} addLeftPadding={false} customSize={20} />
+          <ProfileAvatar
+            photoUrl={profile?.photoUrl ?? null}
+            displayName={profile.displayName}
+            addLeftPadding={false}
+            customSize={20}
+          />
         </TouchableOpacity>
-        <Text className="font-bold text-lg">{`Hello ${profile.displayName}`}</Text>
+        <Text className="font-bold text-lg">{`Hello ${profile.displayName}!`}</Text>
       </View>
     )
-  }, [profile?.photoUrl])
+  }, [profile])
 
   return (
     <SafeAreaView className="flex-1 m-5">

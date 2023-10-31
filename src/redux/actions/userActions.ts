@@ -11,9 +11,10 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 import Toast from 'react-native-toast-message'
 
-import { auth, db } from '../../services/firebase'
+import { auth, db, storage } from '../../services/firebase'
 import { getLastMessage, getMessages } from '../../util/chatHelper'
 import { type ChatPreview, type ChatRoom, type Message, type User } from '../models/userModel'
 
@@ -36,13 +37,11 @@ export const logoutUser = createAsyncThunk('user/logout', async () => {
 export const storeUserData = createAsyncThunk(
   'user/storeUserData',
   async ({ user }: { user: User }) => {
-    const usersCollection = collection(db, 'users')
-
     const docRef = doc(db, 'users', user.uid)
     const docSnapshot = await getDoc(docRef)
 
     if (!docSnapshot.exists()) {
-      await addDoc(usersCollection, user)
+      await setDoc(docRef, user)
     }
   }
 )
@@ -355,17 +354,54 @@ export const updateProfilePhoto = createAsyncThunk(
   'user/updateProfilePhoto',
   async ({ userUid, photoUrl }: { userUid: string; photoUrl: string }): Promise<boolean> => {
     const usersCollection = collection(db, 'users')
-
     const q = query(usersCollection, where('uid', '==', userUid))
-
     const userSnapshots = await getDocs(q)
     const userDoc = userSnapshots.docs?.[0]
 
     if (userDoc?.exists()) {
-      await updateDoc(userDoc.ref, { photoUrl })
+      try {
+        const response = await fetch(photoUrl)
 
-      return true
+        const blob = await response.blob()
+
+        // Check if the blob size is acceptable
+        const fileSize = blob.size
+        console.log('*** fileSize: ', fileSize)
+        if (fileSize > 5 * 1024 * 1024) {
+          // Check if file size is greater than 5MB
+
+          Toast.show({
+            type: 'error',
+            text1: 'Error!',
+            text2: 'Image file is too big.',
+          })
+          throw new Error('Image file is too big.')
+        }
+
+        // Upload to Firebase Storage
+        const imageRef = ref(storage, `userPhotos/${userUid}/profileImage.jpg`)
+        await uploadBytes(imageRef, blob)
+
+        // Get the download URL and update Firestore
+        const downloadURL = await getDownloadURL(imageRef)
+        await updateDoc(userDoc.ref, { photoUrl: downloadURL })
+
+        return await Promise.resolve(true) // Indicate success
+      } catch {
+        Toast.show({
+          type: 'error',
+          text1: 'Error!',
+          text2: 'Could not update profile photo.',
+        })
+        throw new Error('Could not update profile photo.') // Indicate failure
+      }
     }
-    return false
+
+    Toast.show({
+      type: 'error',
+      text1: 'Error!',
+      text2: 'User not found.',
+    })
+    throw new Error('User not found') // User not found or other reasons for not updating
   }
 )

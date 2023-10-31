@@ -57,14 +57,13 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
   React.useEffect(() => {
     navigation.setOptions({
       title: name,
-      headerLeft: () => (
+      headerRight: () => (
         <TouchableOpacity
-          className="relative -left-5"
           onPress={() => {
             navigation.goBack()
           }}
         >
-          <EvilIcons name="chevron-left" size={38} color="gray" />
+          <EvilIcons name="close" size={24} color="gray" />
         </TouchableOpacity>
       ),
     })
@@ -161,12 +160,22 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
               >
                 <Text className={'flex-wrap'}>{item.text}</Text>
               </View>
-              <ProfileAvatar profile={profile} addLeftPadding={true} customSize={null} />
+              <ProfileAvatar
+                photoUrl={profile?.photoUrl ?? null}
+                displayName={profile.displayName}
+                addLeftPadding={true}
+                customSize={null}
+              />
             </View>
           ) : (
             <View className="flex-row self-start items-end" style={{ maxWidth: '100%' }}>
               {friendData !== null && (
-                <ProfileAvatar profile={friendData} addLeftPadding={false} customSize={null} />
+                <ProfileAvatar
+                  photoUrl={friendData?.photoUrl ?? null}
+                  displayName={friendData.displayName}
+                  addLeftPadding={false}
+                  customSize={null}
+                />
               )}
               <View
                 className={'mr-1 border-0.5 p-2 rounded-lg bg-gray-50'}

@@ -16,13 +16,12 @@ import { auth } from '../services/firebase'
 
 type SignupFormNavigationProp = StackNavigationProp<RootStack, 'Auth'>
 
-const SignupForm = ({
-  navigation,
-  setIsSignup,
-}: {
+interface Props {
   navigation: SignupFormNavigationProp
   setIsSignup: (value: boolean) => void
-}) => {
+}
+
+const SignupForm = ({ navigation, setIsSignup }: Props) => {
   const [loading, setLoading] = React.useState(false)
   const dispatch = useAppDispatch()
 
@@ -90,7 +89,7 @@ const SignupForm = ({
               text1: 'Sign up was successful!',
             })
 
-            navigation.navigate('App', { screen: 'Home' })
+            navigation.navigate('AppStack', { screen: 'Home' })
           })
           .catch((error) => {
             const errorCode = error.code
