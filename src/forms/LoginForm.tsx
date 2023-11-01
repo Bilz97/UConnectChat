@@ -9,6 +9,8 @@ import Toast from 'react-native-toast-message'
 import UButton from '../components/UButton'
 import UInputField from '../components/UInputField'
 import { type RootStack } from '../navigation/navigation'
+import { getUser } from '../redux/actions/userActions'
+import { type User } from '../redux/models/userModel'
 import { loginUser } from '../redux/slices/userSlice'
 import { useAppDispatch } from '../redux/store/hooks'
 import { auth } from '../services/firebase'
@@ -30,7 +32,6 @@ const LoginForm = ({ navigation, setIsSignup }: Props) => {
       password: '',
     },
     onSubmit: async (formValues) => {
-      console.log('login values: ', formValues)
       if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(formValues.email)) {
         Toast.show({
           type: 'error',
@@ -40,22 +41,25 @@ const LoginForm = ({ navigation, setIsSignup }: Props) => {
       } else {
         setLoading(true)
         await signInWithEmailAndPassword(auth, formValues.email, formValues.password)
-          .then((userCredential) => {
+          .then(async (userCredential) => {
             // Signed in
-            const user = userCredential.user
+            const firebaseUser = userCredential.user
+            const response = await dispatch(getUser({ userUid: firebaseUser.uid }))
+            const user = response.payload as User
 
-            console.log(user)
             dispatch(
               loginUser({
                 email: user.email,
                 uid: user.uid,
-                displayName: user?.displayName,
-                photoUrl: user?.photoURL ?? null,
+                displayName: user.displayName,
+                photoUrl: user.photoUrl,
+                aboutMe: user.aboutMe,
               })
             )
             Toast.show({
               type: 'success',
-              text1: 'Login successful!',
+              text1: 'Success!',
+              text2: 'Login successful!',
             })
             navigation.navigate('AppStack', { screen: 'Home' })
           })

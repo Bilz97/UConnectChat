@@ -23,7 +23,8 @@ export const logoutUser = createAsyncThunk('user/logout', async () => {
     await auth.signOut()
     Toast.show({
       type: 'success',
-      text1: 'You have successfully logged out!',
+      text1: 'Success!',
+      text2: 'You have successfully logged out!',
     })
   } catch (error) {
     Toast.show({
@@ -58,6 +59,7 @@ export const searchUsers = createAsyncThunk(
 
     querySnapshot.forEach((doc) => {
       if (doc.exists()) {
+        // Get the user data for each matching document
         const userData = doc.data() as User
         if (userData?.uid === userUid) {
           return
@@ -87,7 +89,7 @@ export const addFriend = createAsyncThunk(
       const docSnapshot = await getDoc(docRef)
 
       // Check if the friend is already added
-      if (docSnapshot.exists() && docSnapshot.data()?.[friendUserId]) {
+      if (docSnapshot.exists() && docSnapshot.data()?.[friendUserId] != null) {
         Toast.show({
           type: 'info',
           text1: 'This user is already your friend',
@@ -101,13 +103,14 @@ export const addFriend = createAsyncThunk(
 
       const q = query(usersCollection, where('uid', '==', friendUserId))
       const friends: User[] = []
+
       await getDocs(q).then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
-          // Get the user data for each matching document
           const userData = doc.data() as User
           friends.push(userData)
         })
       })
+
       return friends[0]
     } catch (err) {
       Toast.show({
@@ -130,16 +133,16 @@ export const getMyFriends = createAsyncThunk(
       if (docSnapshot.exists()) {
         const friendsData = docSnapshot.data()
 
-        // Extract the friend IDs from the document data
-        const friendIds = Object.keys(friendsData).sort(
+        // Extract the friend IDs from the document data and sort
+        const friendUids = Object.keys(friendsData).sort(
           (a, b) =>
-            (friendsData[a]?.addedAt?.toMillis() || 0) - (friendsData[b]?.addedAt?.toMillis() || 0)
+            (friendsData[a]?.addedAt?.toMillis() ?? 0) - (friendsData[b]?.addedAt?.toMillis() ?? 0)
         )
 
         const usersCollection = collection(db, 'users')
 
         // Query users collection for all matching uids
-        const q = query(usersCollection, where('uid', 'in', friendIds))
+        const q = query(usersCollection, where('uid', 'in', friendUids))
         const friends: User[] = []
 
         await getDocs(q).then((querySnapshot) => {
@@ -255,12 +258,10 @@ export const sendMessage = createAsyncThunk(
   'user/sendMessage',
   async ({
     userUid,
-    displayName,
     roomId,
     message,
   }: {
     userUid: string
-    displayName: string
     roomId: string
     message: string
   }): Promise<void> => {
@@ -346,13 +347,25 @@ export const getMyChatPreviews = createAsyncThunk(
       })
     )
 
-    return chatPreviews.filter((room) => room.lastMessage !== null)
+    // Filter empty messages and sort by most recent message sent
+    return chatPreviews
+      .filter((room) => room.lastMessage !== null)
+      .sort((a, b) => {
+        const aTimestamp = a.lastMessage?.timestamp
+          ? new Date(a.lastMessage.timestamp).getTime()
+          : 0
+        const bTimestamp = b.lastMessage?.timestamp
+          ? new Date(b.lastMessage.timestamp).getTime()
+          : 0
+
+        return bTimestamp - aTimestamp
+      })
   }
 )
 
 export const updateProfilePhoto = createAsyncThunk(
   'user/updateProfilePhoto',
-  async ({ userUid, photoUrl }: { userUid: string; photoUrl: string }): Promise<boolean> => {
+  async ({ userUid, photoUrl }: { userUid: string; photoUrl: string }): Promise<string | null> => {
     const usersCollection = collection(db, 'users')
     const q = query(usersCollection, where('uid', '==', userUid))
     const userSnapshots = await getDocs(q)
@@ -361,21 +374,18 @@ export const updateProfilePhoto = createAsyncThunk(
     if (userDoc?.exists()) {
       try {
         const response = await fetch(photoUrl)
-
         const blob = await response.blob()
-
-        // Check if the blob size is acceptable
         const fileSize = blob.size
-        console.log('*** fileSize: ', fileSize)
-        if (fileSize > 5 * 1024 * 1024) {
-          // Check if file size is greater than 5MB
 
+        // Check if file size is less then 4MB
+        if (fileSize > 4 * 1024 * 1024) {
           Toast.show({
             type: 'error',
             text1: 'Error!',
-            text2: 'Image file is too big.',
+            text2: 'Image file is too large.',
           })
-          throw new Error('Image file is too big.')
+
+          return null
         }
 
         // Upload to Firebase Storage
@@ -386,14 +396,20 @@ export const updateProfilePhoto = createAsyncThunk(
         const downloadURL = await getDownloadURL(imageRef)
         await updateDoc(userDoc.ref, { photoUrl: downloadURL })
 
-        return await Promise.resolve(true) // Indicate success
+        Toast.show({
+          type: 'success',
+          text1: 'Success!',
+          text2: 'Your profile photo has been updated.',
+        })
+
+        return downloadURL
       } catch {
         Toast.show({
           type: 'error',
           text1: 'Error!',
           text2: 'Could not update profile photo.',
         })
-        throw new Error('Could not update profile photo.') // Indicate failure
+        return null
       }
     }
 
@@ -402,6 +418,58 @@ export const updateProfilePhoto = createAsyncThunk(
       text1: 'Error!',
       text2: 'User not found.',
     })
-    throw new Error('User not found') // User not found or other reasons for not updating
+    return null
+  }
+)
+
+export const updateUserInfo = createAsyncThunk(
+  'user/updateUserInfo',
+  async ({
+    userUid,
+    displayName,
+    aboutMe,
+  }: {
+    userUid: string
+    displayName: string | null
+    aboutMe: string | null
+  }): Promise<User | null> => {
+    const usersCollection = collection(db, 'users')
+    const q = query(usersCollection, where('uid', '==', userUid))
+    const userSnapshots = await getDocs(q)
+    const userDoc = userSnapshots.docs?.[0]
+
+    const payload = {
+      ...(aboutMe !== null && { aboutMe }),
+      ...(displayName !== null && { displayName }),
+    }
+
+    if (userDoc?.exists()) {
+      try {
+        await updateDoc(userDoc.ref, payload)
+        const updatedDoc = await getDoc(userDoc.ref)
+
+        const userData = updatedDoc.data() as User
+        Toast.show({
+          type: 'success',
+          text1: 'Success!',
+          text2: 'Your information has been updated',
+        })
+        return userData
+      } catch {
+        Toast.show({
+          type: 'error',
+          text1: 'Error!',
+          text2: 'Could not update profile. Please try again later.',
+        })
+        return null
+      }
+    }
+
+    Toast.show({
+      type: 'error',
+      text1: 'Error!',
+      text2: 'User not found.',
+    })
+    return null
   }
 )

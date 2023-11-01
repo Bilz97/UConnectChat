@@ -11,7 +11,13 @@ interface Props {
   disabled?: boolean
   loading?: boolean
 }
-const UButton = ({ variant, buttonTitle, onButtonPress, disabled = false, loading }: Props) => {
+const UButton = ({
+  variant,
+  buttonTitle,
+  onButtonPress,
+  disabled = false,
+  loading = false,
+}: Props) => {
   if (variant === 'primary') {
     return (
       <TouchableOpacity

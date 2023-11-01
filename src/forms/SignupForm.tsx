@@ -48,7 +48,7 @@ const SignupForm = ({ navigation, setIsSignup }: Props) => {
         })
       } else {
         setLoading(true)
-        await createUserWithEmailAndPassword(auth, formValues.email, formValues.password)
+        await createUserWithEmailAndPassword(auth, formValues.email.trim(), formValues.password)
           .then(async (authUser) => {
             // Signed in
             const user = authUser.user
@@ -62,7 +62,7 @@ const SignupForm = ({ navigation, setIsSignup }: Props) => {
               return
             }
             await updateProfile(user, {
-              displayName,
+              displayName: displayName.trim(),
             })
 
             await dispatch(
@@ -72,6 +72,7 @@ const SignupForm = ({ navigation, setIsSignup }: Props) => {
                   uid: user.uid,
                   displayName,
                   photoUrl: user?.photoURL ?? null,
+                  aboutMe: '',
                 },
               })
             )
@@ -82,24 +83,32 @@ const SignupForm = ({ navigation, setIsSignup }: Props) => {
                 uid: user.uid,
                 displayName: user.displayName,
                 photoUrl: user?.photoURL ?? null,
+                aboutMe: '',
               })
             )
             Toast.show({
               type: 'success',
-              text1: 'Sign up was successful!',
+              text1: 'Success!',
+              text2: 'Sign up was successful!',
             })
 
             navigation.navigate('AppStack', { screen: 'Home' })
           })
           .catch((error) => {
-            const errorCode = error.code
             const errorMessage = error.message
-            console.log(errorCode, errorMessage)
-            Toast.show({
-              type: 'error',
-              text1: 'Error!',
-              text2: errorMessage,
-            })
+            if (error.code === 'auth/email-already-in-use') {
+              Toast.show({
+                type: 'error',
+                text1: 'Error!',
+                text2: 'This email is already in use.',
+              })
+            } else {
+              Toast.show({
+                type: 'error',
+                text1: 'Error!',
+                text2: errorMessage,
+              })
+            }
           })
         setLoading(false)
       }

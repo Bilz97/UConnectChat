@@ -16,7 +16,10 @@ export type AppTabStack = {
 export type ModalStack = {
   ChatRoomModal: {
     name?: string
-    friendId?: string
+    friendUid?: string
+  }
+  FriendInfoModal: {
+    friendUid?: string
   }
 }
 

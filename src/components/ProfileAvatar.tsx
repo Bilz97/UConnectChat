@@ -1,4 +1,3 @@
-import { memo } from 'react'
 import * as React from 'react'
 import { Image, Text, View } from 'react-native'
 
@@ -7,17 +6,22 @@ import { getInitials } from '../util/chatHelper'
 interface Props {
   photoUrl: string | null
   displayName: string
-  addLeftPadding: boolean
-  customSize: number | null
+
+  large?: boolean
+  customClassName?: string
 }
-const ProfileAvatar = ({ photoUrl, displayName, addLeftPadding, customSize: size }: Props) => {
-  const imageSize: string = size !== null ? `h-${size} w-${size}` : 'h-12 w-12'
-  console.log('*** imageSize: ', imageSize)
+const ProfileAvatar = ({
+  photoUrl,
+  displayName,
+
+  large = false,
+  customClassName = '',
+}: Props) => {
   return (
     <View
-      className={`rounded-full justify-center items-center ${
-        addLeftPadding ? 'ml-2' : 'mr-2'
-      } border ${imageSize} w-20 h-20`}
+      className={`rounded-full justify-center items-center border  ${
+        large ? 'h-20 w-20' : 'h-12 w-12'
+      } ${customClassName} `}
     >
       {photoUrl !== null ? (
         <Image
@@ -26,7 +30,7 @@ const ProfileAvatar = ({ photoUrl, displayName, addLeftPadding, customSize: size
           resizeMode="stretch"
         />
       ) : (
-        <Text className={`font-semibold ${size !== null && size > 15 ? 'text-2xl' : 'text-lg'}`}>
+        <Text className={`font-semibold ${large ? 'text-2xl' : 'text-lg'}`}>
           {getInitials(displayName)}
         </Text>
       )}
@@ -34,4 +38,4 @@ const ProfileAvatar = ({ photoUrl, displayName, addLeftPadding, customSize: size
   )
 }
 
-export default memo(ProfileAvatar)
+export default ProfileAvatar

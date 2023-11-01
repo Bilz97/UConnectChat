@@ -3,10 +3,11 @@ import * as React from 'react'
 import { FlatList, Text, TextInput, TouchableOpacity, View } from 'react-native'
 
 import { EvilIcons } from '@expo/vector-icons'
+import { useNavigation } from '@react-navigation/native'
 import { useFormik } from 'formik'
 import Toast from 'react-native-toast-message'
 
-import { addFriend, searchUsers } from '../redux/actions/userActions'
+import { searchUsers } from '../redux/actions/userActions'
 import { type User } from '../redux/models/userModel'
 import { UserSelectors } from '../redux/slices/userSlice'
 import { useAppDispatch, useAppSelector } from '../redux/store/hooks'
@@ -15,7 +16,7 @@ const SearchForFriends = () => {
   const dispatch = useAppDispatch()
   const [searchResults, setSearchResults] = React.useState<User[]>([])
   const profile = useAppSelector(UserSelectors.selectUser)
-
+  const navigation = useNavigation()
   if (profile == null) {
     return
   }
@@ -56,10 +57,15 @@ const SearchForFriends = () => {
 
   const onFriendPress = React.useCallback(
     async (friendUid: string) => {
-      await dispatch(addFriend({ userUid: profile.uid, friendUserId: friendUid }))
       setSearchResults([])
+      navigation.getParent()?.navigate('ModalStack', {
+        screen: 'FriendInfoModal',
+        params: {
+          friendUid,
+        },
+      })
     },
-    [dispatch]
+    [dispatch, navigation]
   )
 
   return (
@@ -74,11 +80,20 @@ const SearchForFriends = () => {
         />
         <TouchableOpacity
           onPress={() => {
-            handleSubmit()
+            if (searchResults.length > 0) {
+              resetForm()
+              setSearchResults([])
+            } else {
+              handleSubmit()
+            }
           }}
           className="p-2"
         >
-          <EvilIcons name="search" size={28} color="gray" />
+          {searchResults.length > 0 ? (
+            <EvilIcons name="close" size={28} color="gray" />
+          ) : (
+            <EvilIcons name="search" size={28} color="gray" />
+          )}
         </TouchableOpacity>
       </View>
       {searchResults.length > 0 && (

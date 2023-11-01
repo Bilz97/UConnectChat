@@ -8,16 +8,20 @@ import { onAuthStateChanged } from 'firebase/auth'
 import Toast from 'react-native-toast-message'
 
 import ChatScreenModal from './src/modals/ChatScreen'
+import FriendInfoScreenModal from './src/modals/FriendInfoScreen'
 import {
   type AppTabStack,
   type ModalStack,
   type RootStack,
   type SettingsStack,
 } from './src/navigation/navigation'
+import { getUser } from './src/redux/actions/userActions'
+import { type User } from './src/redux/models/userModel'
 import { loginUser, UserSelectors } from './src/redux/slices/userSlice'
 import { useAppDispatch, useAppSelector } from './src/redux/store/hooks'
 import AuthScreen from './src/screens/AuthScreen'
 import HomeScreen from './src/screens/HomeScreen'
+import PersonalInfoScreen from './src/screens/PersonalInfoScreen'
 import SettingsScreen from './src/screens/SettingsScreen'
 import { auth } from './src/services/firebase'
 
@@ -32,17 +36,12 @@ export default function App() {
   const dispatch = useAppDispatch()
 
   React.useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (userAuth) => {
+    const unsubscribe = onAuthStateChanged(auth, async (userAuth) => {
       if (userAuth !== null) {
         // User is logged in, send the user's details to redux, store the current user in the state
-        dispatch(
-          loginUser({
-            email: userAuth.email,
-            uid: userAuth.uid,
-            displayName: userAuth.displayName,
-            photoUrl: userAuth?.photoURL ?? null,
-          })
-        )
+        const response = await dispatch(getUser({ userUid: userAuth.uid }))
+        const user = response.payload as User
+        dispatch(loginUser(user))
       }
     })
 
@@ -55,7 +54,7 @@ export default function App() {
         <Settings.Screen name="Settings" component={SettingsScreen} />
         <Settings.Screen
           name="PersonalInformation"
-          component={SettingsScreen}
+          component={PersonalInfoScreen}
           options={{ title: 'Personal Information' }}
         />
       </Settings.Navigator>
@@ -68,7 +67,7 @@ export default function App() {
         <Tab.Screen
           name="SettingsStack"
           component={SettingsStack}
-          options={{ headerShown: false }}
+          options={{ headerShown: false, title: 'Settings' }}
         />
       </Tab.Navigator>
     )
@@ -78,6 +77,7 @@ export default function App() {
     return (
       <Modal.Navigator screenOptions={{ headerShown: true }}>
         <Modal.Screen name="ChatRoomModal" component={ChatScreenModal} />
+        <Modal.Screen name="FriendInfoModal" component={FriendInfoScreenModal} />
       </Modal.Navigator>
     )
   }
