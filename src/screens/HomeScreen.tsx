@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Image,
   SafeAreaView,
   Text,
   TouchableOpacity,
@@ -25,7 +24,6 @@ import {
 import { type ChatRoomPreview, type User } from '../redux/models/userModel'
 import { UserSelectors } from '../redux/slices/userSlice'
 import { useAppDispatch, useAppSelector } from '../redux/store/hooks'
-import { getInitials } from '../util/chatHelper'
 
 type ScreenNavigationProp = StackNavigationProp<AppTabStack, 'Home'>
 
@@ -40,6 +38,7 @@ const HomeScreen = ({ navigation }: Props) => {
   const myChatPreviews = useAppSelector(UserSelectors.selectMyChatPreviews)
   const [chatPreviewList, setChatPreviewList] = React.useState<ChatRoomPreview[]>([])
   const [isLoading, setIsLoading] = React.useState(false)
+  const [isPreviewMessagesLoading, setIsPreviewMessagesLoading] = React.useState(false)
 
   if (profile === null) {
     return
@@ -49,6 +48,8 @@ const HomeScreen = ({ navigation }: Props) => {
     if (myChatPreviews === null) {
       return
     }
+
+    setIsPreviewMessagesLoading(true)
     const openChatsPromise = Promise.all(
       myChatPreviews.map(async (room) => {
         const friendUid = room.roomName
@@ -64,9 +65,13 @@ const HomeScreen = ({ navigation }: Props) => {
       })
     )
 
-    openChatsPromise.then((chats) => {
-      setChatPreviewList(chats)
-    })
+    openChatsPromise
+      .then((chats) => {
+        setChatPreviewList(chats)
+      })
+      .finally(() => {
+        setIsPreviewMessagesLoading(false)
+      })
   }, [myChatPreviews])
 
   React.useEffect(() => {
@@ -120,9 +125,6 @@ const HomeScreen = ({ navigation }: Props) => {
           {
             text: 'Cancel',
             style: 'cancel',
-            onPress: () => {
-              console.log('Option 3 selected')
-            },
           },
         ],
         { cancelable: true }
@@ -193,19 +195,12 @@ const HomeScreen = ({ navigation }: Props) => {
           }}
           className="flex-row items-center"
         >
-          <View className="rounded-full justify-center items-center mr-2 border h-12 w-12">
-            {item?.friend.photoUrl !== null ? (
-              <Image
-                source={{ uri: item.friend.photoUrl }}
-                className="w-12 h-12 rounded-full"
-                resizeMode="stretch"
-              />
-            ) : (
-              <Text className="font-semibold text-lg">
-                {getInitials(item?.friend?.displayName)}
-              </Text>
-            )}
-          </View>
+          <ProfileAvatar
+            photoUrl={item.friend.photoUrl}
+            displayName={item.friend.displayName}
+            addLeftPadding={false}
+            large={false}
+          />
           <View>
             <Text className="font-semibold">{item.friend?.displayName}</Text>
             <Text className="text-sm">{`${
@@ -223,7 +218,7 @@ const HomeScreen = ({ navigation }: Props) => {
       <View className="mt-5">
         <Text className="text-lg font-bold">{'My Messages'}</Text>
 
-        {isLoading ? (
+        {isLoading || isPreviewMessagesLoading ? (
           <ActivityIndicator size={'small'} className="pt-5" />
         ) : (
           <FlatList
@@ -240,7 +235,7 @@ const HomeScreen = ({ navigation }: Props) => {
         )}
       </View>
     )
-  }, [chatPreviewList, isLoading])
+  }, [chatPreviewList, isLoading, isPreviewMessagesLoading])
 
   const welcomeMessage = React.useCallback(() => {
     return (
@@ -256,13 +251,13 @@ const HomeScreen = ({ navigation }: Props) => {
             photoUrl={profile?.photoUrl ?? null}
             displayName={profile.displayName}
             addLeftPadding={false}
-            customSize={20}
+            large
           />
         </TouchableOpacity>
         <Text className="font-bold text-lg">{`Hello ${profile.displayName}!`}</Text>
       </View>
     )
-  }, [profile])
+  }, [profile?.photoUrl, profile.displayName])
 
   return (
     <SafeAreaView className="flex-1 m-5">

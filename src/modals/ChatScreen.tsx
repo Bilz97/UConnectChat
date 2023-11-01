@@ -131,7 +131,6 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
         await dispatch(
           sendMessage({
             userUid: profile.uid,
-            displayName: profile.displayName,
             roomId: chatRoom.roomName,
             message: formValues.message,
           })
@@ -164,7 +163,7 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
                 photoUrl={profile?.photoUrl ?? null}
                 displayName={profile.displayName}
                 addLeftPadding={true}
-                customSize={null}
+                large={false}
               />
             </View>
           ) : (
@@ -174,7 +173,7 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
                   photoUrl={friendData?.photoUrl ?? null}
                   displayName={friendData.displayName}
                   addLeftPadding={false}
-                  customSize={null}
+                  large={false}
                 />
               )}
               <View

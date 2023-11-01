@@ -8,6 +8,8 @@ import {
   logoutUser,
   readyChatRoom,
   refetchChatRoom,
+  updateProfilePhoto,
+  updateUserInfo,
 } from '../actions/userActions'
 import { type ChatPreview, type ChatRoom, type User } from '../models/userModel'
 import { type RootState } from '../store/store'
@@ -32,11 +34,6 @@ export const userSlice = createSlice({
   reducers: {
     loginUser: (state, action) => {
       state.user = action.payload
-    },
-    updateUserPhoto: (state, action) => {
-      if (state.user !== null) {
-        state.user.photoUrl = action.payload
-      }
     },
   },
   extraReducers: (builder) => {
@@ -75,10 +72,20 @@ export const userSlice = createSlice({
         state.activeChatRoom = action.payload
       }
     })
+    builder.addCase(updateUserInfo.fulfilled, (state, action) => {
+      if (action.payload !== null) {
+        state.user = action.payload
+      }
+    })
+    builder.addCase(updateProfilePhoto.fulfilled, (state, action) => {
+      if (action.payload !== null && state.user !== null) {
+        state.user.photoUrl = action.payload
+      }
+    })
   },
 })
 
-export const { loginUser, updateUserPhoto } = userSlice.actions
+export const { loginUser } = userSlice.actions
 
 export const UserSelectors = {
   selectUser: (state: RootState) => state.user.user,

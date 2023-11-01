@@ -10,7 +10,7 @@ import Toast from 'react-native-toast-message'
 import NavBarOption from '../components/NavBarOption'
 import { type SettingsStack } from '../navigation/navigation'
 import { logoutUser, updateProfilePhoto } from '../redux/actions/userActions'
-import { updateUserPhoto, UserSelectors } from '../redux/slices/userSlice'
+import { UserSelectors } from '../redux/slices/userSlice'
 import { useAppDispatch, useAppSelector } from '../redux/store/hooks'
 import { auth } from '../services/firebase'
 
@@ -55,14 +55,9 @@ const SettingsScreen = ({ navigation }: Props) => {
             await updateProfile(user, {
               photoURL: photoUrl,
             })
-            dispatch(updateUserPhoto(photoUrl))
           }
         } catch {
-          Toast.show({
-            type: 'error',
-            text1: 'Error!',
-            text2: 'Could not save profile photo. Please try again later.',
-          })
+          // do nothing
         }
       } else {
         Toast.show({
