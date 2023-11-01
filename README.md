@@ -74,7 +74,7 @@ This is a great place to put miscellaneous helpers and utilities. Things like da
 **Version control:** Git
 **Development tools and platforms:** Android Studio, Xcode, Expo CLI, ESLint, Prettier 
 
-## Technologies used 
+## App features
 The features in this app include:
 - login 
 - signup
