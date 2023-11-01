@@ -89,7 +89,7 @@ export const addFriend = createAsyncThunk(
       const docSnapshot = await getDoc(docRef)
 
       // Check if the friend is already added
-      if (docSnapshot.exists() && docSnapshot.data()?.[friendUserId] !== null) {
+      if (docSnapshot.exists() && docSnapshot.data()?.[friendUserId] != null) {
         Toast.show({
           type: 'info',
           text1: 'This user is already your friend',
@@ -134,7 +134,7 @@ export const getMyFriends = createAsyncThunk(
         const friendsData = docSnapshot.data()
 
         // Extract the friend IDs from the document data and sort
-        const friendIds = Object.keys(friendsData).sort(
+        const friendUids = Object.keys(friendsData).sort(
           (a, b) =>
             (friendsData[a]?.addedAt?.toMillis() ?? 0) - (friendsData[b]?.addedAt?.toMillis() ?? 0)
         )
@@ -142,7 +142,7 @@ export const getMyFriends = createAsyncThunk(
         const usersCollection = collection(db, 'users')
 
         // Query users collection for all matching uids
-        const q = query(usersCollection, where('uid', 'in', friendIds))
+        const q = query(usersCollection, where('uid', 'in', friendUids))
         const friends: User[] = []
 
         await getDocs(q).then((querySnapshot) => {

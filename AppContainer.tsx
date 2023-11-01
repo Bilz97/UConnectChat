@@ -8,6 +8,7 @@ import { onAuthStateChanged } from 'firebase/auth'
 import Toast from 'react-native-toast-message'
 
 import ChatScreenModal from './src/modals/ChatScreen'
+import FriendInfoScreenModal from './src/modals/FriendInfoScreen'
 import {
   type AppTabStack,
   type ModalStack,
@@ -76,6 +77,7 @@ export default function App() {
     return (
       <Modal.Navigator screenOptions={{ headerShown: true }}>
         <Modal.Screen name="ChatRoomModal" component={ChatScreenModal} />
+        <Modal.Screen name="FriendInfoModal" component={FriendInfoScreenModal} />
       </Modal.Navigator>
     )
   }

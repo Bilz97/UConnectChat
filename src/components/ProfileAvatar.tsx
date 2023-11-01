@@ -6,15 +6,22 @@ import { getInitials } from '../util/chatHelper'
 interface Props {
   photoUrl: string | null
   displayName: string
-  addLeftPadding: boolean
-  large: boolean
+
+  large?: boolean
+  customClassName?: string
 }
-const ProfileAvatar = ({ photoUrl, displayName, addLeftPadding, large = false }: Props) => {
+const ProfileAvatar = ({
+  photoUrl,
+  displayName,
+
+  large = false,
+  customClassName = '',
+}: Props) => {
   return (
     <View
-      className={`rounded-full justify-center items-center ${
-        addLeftPadding ? 'ml-2' : 'mr-2'
-      } border  ${large ? 'h-20 w-20' : 'h-12 w-12'} `}
+      className={`rounded-full justify-center items-center border  ${
+        large ? 'h-20 w-20' : 'h-12 w-12'
+      } ${customClassName} `}
     >
       {photoUrl !== null ? (
         <Image

@@ -107,7 +107,7 @@ const HomeScreen = ({ navigation }: Props) => {
                   screen: 'ChatRoomModal',
                   params: {
                     name: friend.displayName,
-                    friendId: friend.uid,
+                    friendUid: friend.uid,
                   },
                 })
               } catch {
@@ -141,7 +141,7 @@ const HomeScreen = ({ navigation }: Props) => {
           screen: 'ChatRoomModal',
           params: {
             name: preview.friend.displayName,
-            friendId: preview.friend.uid,
+            friendUid: preview.friend.uid,
           },
         })
       } catch {
@@ -198,8 +198,7 @@ const HomeScreen = ({ navigation }: Props) => {
           <ProfileAvatar
             photoUrl={item.friend.photoUrl}
             displayName={item.friend.displayName}
-            addLeftPadding={false}
-            large={false}
+            customClassName="mr-2"
           />
           <View>
             <Text className="font-semibold">{item.friend?.displayName}</Text>
@@ -250,7 +249,7 @@ const HomeScreen = ({ navigation }: Props) => {
           <ProfileAvatar
             photoUrl={profile?.photoUrl ?? null}
             displayName={profile.displayName}
-            addLeftPadding={false}
+            customClassName="mr-2"
             large
           />
         </TouchableOpacity>

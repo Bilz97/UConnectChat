@@ -39,7 +39,7 @@ interface Props {
 }
 
 const ChatScreenModal = ({ navigation, route }: Props) => {
-  const { name, friendId } = route.params
+  const { name, friendUid } = route.params
 
   const chatRoom = useAppSelector(UserSelectors.selectActiveChatRoom)
   const profile = useAppSelector(UserSelectors.selectUser)
@@ -71,11 +71,11 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
 
   React.useEffect(() => {
     async function getFriendData() {
-      if (!friendId) {
+      if (friendUid == null) {
         return
       }
       setIsLoading(true)
-      const user = await dispatch(getUser({ userUid: friendId }))
+      const user = await dispatch(getUser({ userUid: friendUid }))
       if (user.payload !== null && user.payload !== undefined) {
         setFriendData(user.payload as User)
       }
@@ -85,7 +85,7 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
       }, 100)
     }
     getFriendData()
-  }, [friendId, dispatch])
+  }, [friendUid, dispatch])
 
   React.useEffect(() => {
     if (scrollRef.current !== null) {
@@ -112,7 +112,7 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
       message: '',
     },
     onSubmit: async (formValues) => {
-      if (!friendId) {
+      if (friendUid == null) {
         Toast.show({
           type: 'error',
           text1: 'Error!',
@@ -162,8 +162,7 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
               <ProfileAvatar
                 photoUrl={profile?.photoUrl ?? null}
                 displayName={profile.displayName}
-                addLeftPadding={true}
-                large={false}
+                customClassName="ml-2"
               />
             </View>
           ) : (
@@ -172,8 +171,7 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
                 <ProfileAvatar
                   photoUrl={friendData?.photoUrl ?? null}
                   displayName={friendData.displayName}
-                  addLeftPadding={false}
-                  large={false}
+                  customClassName="mr-2"
                 />
               )}
               <View
