@@ -8,6 +8,7 @@ import {
   logoutUser,
   readyChatRoom,
   refetchChatRoom,
+  removeFriend,
   updateProfilePhoto,
   updateUserInfo,
 } from '../actions/userActions'
@@ -15,14 +16,14 @@ import { type ChatPreview, type ChatRoom, type User } from '../models/userModel'
 import { type RootState } from '../store/store'
 
 interface UserState {
-  user: User | null
+  profile: User | null
   myFriends: User[] | null
   activeChatRoom: ChatRoom | null
   myChatPreviews: ChatPreview[] | null
 }
 
 const initialState: UserState = {
-  user: null,
+  profile: null,
   myFriends: null,
   activeChatRoom: null,
   myChatPreviews: null,
@@ -33,12 +34,12 @@ export const userSlice = createSlice({
   initialState,
   reducers: {
     loginUser: (state, action) => {
-      state.user = action.payload
+      state.profile = action.payload
     },
   },
   extraReducers: (builder) => {
     builder.addCase(logoutUser.fulfilled, (state) => {
-      state.user = null
+      state.profile = null
     })
     builder.addCase(getMyFriends.fulfilled, (state, action) => {
       if (action.payload !== null) {
@@ -74,12 +75,19 @@ export const userSlice = createSlice({
     })
     builder.addCase(updateUserInfo.fulfilled, (state, action) => {
       if (action.payload !== null) {
-        state.user = action.payload
+        state.profile = action.payload
       }
     })
     builder.addCase(updateProfilePhoto.fulfilled, (state, action) => {
-      if (action.payload !== null && state.user !== null) {
-        state.user.photoUrl = action.payload
+      if (action.payload !== null && state.profile !== null) {
+        state.profile.photoUrl = action.payload
+      }
+    })
+    builder.addCase(removeFriend.fulfilled, (state, action) => {
+      if (action.payload !== null && state.myFriends !== null) {
+        const friendId = action.payload
+        const friends = state.myFriends?.filter((friend) => friend.uid !== friendId)
+        state.myFriends = friends
       }
     })
   },
@@ -88,7 +96,7 @@ export const userSlice = createSlice({
 export const { loginUser } = userSlice.actions
 
 export const UserSelectors = {
-  selectUser: (state: RootState) => state.user.user,
+  selectUser: (state: RootState) => state.user.profile,
   selectMyFriends: (state: RootState) => state.user.myFriends,
   selectActiveChatRoom: (state: RootState) => state.user.activeChatRoom,
   selectMyChatPreviews: (state: RootState) => state.user.myChatPreviews,

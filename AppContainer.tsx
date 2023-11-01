@@ -31,7 +31,7 @@ export default function App() {
   const Modal = createNativeStackNavigator<ModalStack>()
   const Settings = createStackNavigator<SettingsStack>()
 
-  const user = useAppSelector(UserSelectors.selectUser)
+  const profile = useAppSelector(UserSelectors.selectUser)
 
   const dispatch = useAppDispatch()
 
@@ -84,7 +84,7 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={user === null ? 'Auth' : 'AppStack'}>
+      <Stack.Navigator initialRouteName={profile == null ? 'Auth' : 'AppStack'}>
         <Stack.Screen name="Auth" component={AuthScreen} options={{ headerShown: false }} />
         <Stack.Screen name="AppStack" component={AppTabStack} options={{ headerShown: false }} />
         <Stack.Screen

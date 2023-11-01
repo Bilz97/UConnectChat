@@ -20,6 +20,7 @@ import {
   getMyFriends,
   getUser,
   readyChatRoom,
+  removeFriend,
 } from '../redux/actions/userActions'
 import { type ChatRoomPreview, type User } from '../redux/models/userModel'
 import { UserSelectors } from '../redux/slices/userSlice'
@@ -40,7 +41,7 @@ const HomeScreen = ({ navigation }: Props) => {
   const [isLoading, setIsLoading] = React.useState(false)
   const [isPreviewMessagesLoading, setIsPreviewMessagesLoading] = React.useState(false)
 
-  if (profile === null) {
+  if (profile == null) {
     return
   }
 
@@ -76,7 +77,7 @@ const HomeScreen = ({ navigation }: Props) => {
 
   React.useEffect(() => {
     async function getData() {
-      if (profile === null) {
+      if (profile == null) {
         return
       }
       setIsLoading(true)
@@ -85,7 +86,7 @@ const HomeScreen = ({ navigation }: Props) => {
       setIsLoading(false)
     }
     getData()
-  }, [profile])
+  }, [profile, dispatch])
 
   React.useEffect(() => {
     getChatPreviews()
@@ -118,8 +119,9 @@ const HomeScreen = ({ navigation }: Props) => {
           {
             text: 'Remove Friend',
             style: 'destructive',
-            onPress: () => {
+            onPress: async () => {
               console.log('Option 2 selected')
+              await dispatch(removeFriend({ userUid: profile.uid, friendUserId: friend.uid }))
             },
           },
           {

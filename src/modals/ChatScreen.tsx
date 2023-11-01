@@ -95,7 +95,7 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
     }
   }, [chatRoom])
 
-  if (profile === null || chatRoom == null) {
+  if (profile == null || chatRoom == null) {
     return
   }
 

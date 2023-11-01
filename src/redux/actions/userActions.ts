@@ -124,7 +124,7 @@ export const addFriend = createAsyncThunk(
 )
 
 export const getMyFriends = createAsyncThunk(
-  'user/myFriends',
+  'user/getMyFriends',
   async ({ userUid }: { userUid: string }): Promise<User[]> => {
     try {
       const docRef = doc(db, 'friends', userUid)
@@ -133,11 +133,14 @@ export const getMyFriends = createAsyncThunk(
       if (docSnapshot.exists()) {
         const friendsData = docSnapshot.data()
 
-        // Extract the friend IDs from the document data and sort
-        const friendUids = Object.keys(friendsData).sort(
-          (a, b) =>
-            (friendsData[a]?.addedAt?.toMillis() ?? 0) - (friendsData[b]?.addedAt?.toMillis() ?? 0)
-        )
+        // Extract the friend IDs from the document data, filter the 'removed friends' and sort
+        const friendUids = Object.keys(friendsData)
+          .filter((id) => friendsData[id]?.addedAt != null)
+          .sort(
+            (a, b) =>
+              (friendsData[a]?.addedAt?.toMillis() ?? 0) -
+              (friendsData[b]?.addedAt?.toMillis() ?? 0)
+          )
 
         const usersCollection = collection(db, 'users')
 
@@ -471,5 +474,37 @@ export const updateUserInfo = createAsyncThunk(
       text2: 'User not found.',
     })
     return null
+  }
+)
+
+export const removeFriend = createAsyncThunk(
+  'user/removeFriend',
+  async ({
+    userUid,
+    friendUserId,
+  }: {
+    userUid: string
+    friendUserId: string
+  }): Promise<string | null> => {
+    try {
+      const docRef = doc(db, 'friends', userUid)
+
+      await updateDoc(docRef, {
+        [friendUserId]: null,
+      })
+      Toast.show({
+        type: 'success',
+        text1: 'Success!',
+        text2: 'The individual has been removed from your friends list',
+      })
+      return friendUserId
+    } catch (err) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error!',
+        text2: 'An error occured when adding your friend. Please try again.',
+      })
+      return null
+    }
   }
 )

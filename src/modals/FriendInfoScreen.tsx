@@ -4,6 +4,7 @@ import { ActivityIndicator, SafeAreaView, Text, TouchableOpacity, View } from 'r
 import { EvilIcons } from '@expo/vector-icons'
 import { type RouteProp } from '@react-navigation/native'
 import { type StackNavigationProp } from '@react-navigation/stack'
+import Toast from 'react-native-toast-message'
 
 import ProfileAvatar from '../components/ProfileAvatar'
 import UButton from '../components/UButton'
@@ -62,17 +63,16 @@ const FriendInfoScreenModal = ({ navigation, route }: Props) => {
     getFriendData()
   }, [friendUid])
 
-  if (friendUid == null || friend == null || profile == null) {
-    return (
-      <SafeAreaView className="flex-1 p-5 bg-white">
-        <View>
-          <Text>{'This user cannot be found.'}</Text>
-        </View>
-      </SafeAreaView>
-    )
-  }
-
   const onAddFriendPress = React.useCallback(async () => {
+    if (profile == null || friendUid == null) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error!',
+        text2: 'Something went wrong. Please try again later',
+      })
+      return
+    }
+
     setIsAddFriendLoading(true)
     await dispatch(addFriend({ userUid: profile.uid, friendUserId: friendUid }))
     setIsAddFriendLoading(false)
@@ -81,7 +81,7 @@ const FriendInfoScreenModal = ({ navigation, route }: Props) => {
 
   return (
     <SafeAreaView className="flex-1 p-5 bg-white">
-      {isLoading ? (
+      {isLoading || friend == null ? (
         <ActivityIndicator className="absolute left-0 right-0 top-0 bottom-0" size={'large'} />
       ) : (
         <View className="flex-1 p-5">
@@ -98,7 +98,7 @@ const FriendInfoScreenModal = ({ navigation, route }: Props) => {
               <EvilIcons name="envelope" size={24} />
               <Text>{friend.email}</Text>
             </View>
-            <View className="mt-5">
+            <View className="mt-5 self-start">
               <Text className="font-bold text-lg">{'Bio'}</Text>
               <Text>
                 {friend.aboutMe.length > 0
