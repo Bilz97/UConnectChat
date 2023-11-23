@@ -7,6 +7,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { onAuthStateChanged } from 'firebase/auth'
 import Toast from 'react-native-toast-message'
 
+import AudioVideoScreenModal from './src/modals/AudioVideoScreen'
 import ChatScreenModal from './src/modals/ChatScreen'
 import FriendInfoScreenModal from './src/modals/FriendInfoScreen'
 import {
@@ -78,6 +79,7 @@ export default function App() {
       <Modal.Navigator screenOptions={{ headerShown: true }}>
         <Modal.Screen name="ChatRoomModal" component={ChatScreenModal} />
         <Modal.Screen name="FriendInfoModal" component={FriendInfoScreenModal} />
+        <Modal.Screen name="AudioVideoModal" component={AudioVideoScreenModal} />
       </Modal.Navigator>
     )
   }

@@ -90,8 +90,8 @@ const FriendInfoScreenModal = ({ navigation, route }: Props) => {
               <ProfileAvatar
                 photoUrl={friend.photoUrl}
                 displayName={friend.displayName}
-                size={24}
                 customClassName="h-24 w-24"
+                largeText
               />
               <Text className="px-2 font-bold text-lg">{friend.displayName}</Text>
             </View>

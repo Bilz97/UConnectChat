@@ -11,15 +11,25 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": ["**/*", "./src/**/*"],
+    "assetBundlePatterns": [
+      "**/*",
+      "./src/**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.UConnectChat"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ],
+      "package": "com.anonymous.UConnectChat"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -29,6 +39,13 @@
         "expo-image-picker",
         {
           "photosPermission": "The app accesses your photos to let you set a profile photo."
+        }
+      ],
+      [
+        "react-native-twilio-video-webrtc",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
         }
       ]
     ]

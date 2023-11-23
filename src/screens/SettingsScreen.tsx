@@ -35,7 +35,8 @@ const SettingsScreen = ({ navigation }: Props) => {
         <ProfileAvatar
           photoUrl={profile?.photoUrl ?? null}
           displayName={profile.displayName}
-          size={24}
+          customClassName="w-24 h-24"
+          largeText
           pressable
         />
         <Text className="px-2 font-bold text-lg">{profile.displayName}</Text>

@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native'
 
-import { EvilIcons } from '@expo/vector-icons'
+import { AntDesign, EvilIcons } from '@expo/vector-icons'
 import { type RouteProp } from '@react-navigation/native'
 import { type StackNavigationProp } from '@react-navigation/stack'
 import { useFormik } from 'formik'
@@ -57,6 +57,22 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
   React.useEffect(() => {
     navigation.setOptions({
       title: name,
+      headerLeft: () => (
+        <TouchableOpacity
+          onPress={() => {
+            navigation.goBack()
+          }}
+        >
+          <AntDesign
+            onPress={() => {
+              navigation.navigate('AudioVideoModal', { friendUid: friendData?.uid })
+            }}
+            name="phone"
+            size={24}
+            color="gray"
+          />
+        </TouchableOpacity>
+      ),
       headerRight: () => (
         <TouchableOpacity
           onPress={() => {
@@ -162,8 +178,7 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
               <ProfileAvatar
                 photoUrl={profile?.photoUrl ?? null}
                 displayName={profile.displayName}
-                size={12}
-                customClassName="ml-2"
+                customClassName="ml-2 w-12 h-12"
               />
             </View>
           ) : (
@@ -172,8 +187,7 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
                 <ProfileAvatar
                   photoUrl={friendData?.photoUrl ?? null}
                   displayName={friendData.displayName}
-                  size={12}
-                  customClassName="mr-2"
+                  customClassName="mr-2 w-12 h-12"
                 />
               )}
               <View

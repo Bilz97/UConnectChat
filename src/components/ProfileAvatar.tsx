@@ -11,14 +11,14 @@ import { imagePicker } from '../util/userHelper'
 interface Props {
   photoUrl: string | null
   displayName: string
-  size: number
+  largeText?: boolean
   customClassName?: string
   pressable?: boolean
 }
 const ProfileAvatar = ({
   photoUrl,
   displayName,
-  size,
+  largeText = false,
   customClassName = '',
   pressable = false,
 }: Props) => {
@@ -56,9 +56,7 @@ const ProfileAvatar = ({
   }
 
   return (
-    <View
-      className={`rounded-full justify-center items-center border h-${size} w-${size}  ${customClassName}`}
-    >
+    <View className={`rounded-full justify-center items-center border ${customClassName}`}>
       {photoUrl !== null ? (
         <Image
           source={{ uri: photoUrl }}
@@ -66,7 +64,7 @@ const ProfileAvatar = ({
           resizeMode="stretch"
         />
       ) : (
-        <Text className={`font-semibold ${size >= 20 ? 'text-2xl' : 'text-lg'}`}>
+        <Text className={`font-semibold ${largeText ? 'text-2xl' : 'text-lg'}`}>
           {getInitials(displayName)}
         </Text>
       )}

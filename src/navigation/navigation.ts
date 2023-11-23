@@ -21,6 +21,9 @@ export type ModalStack = {
   FriendInfoModal: {
     friendUid?: string
   }
+  AudioVideoModal: {
+    friendUid?: string
+  }
 }
 
 export type SettingsStack = {
