@@ -200,6 +200,7 @@ const HomeScreen = ({ navigation }: Props) => {
           <ProfileAvatar
             photoUrl={item.friend.photoUrl}
             displayName={item.friend.displayName}
+            size={12}
             customClassName="mr-2"
           />
           <View>
@@ -251,8 +252,8 @@ const HomeScreen = ({ navigation }: Props) => {
           <ProfileAvatar
             photoUrl={profile?.photoUrl ?? null}
             displayName={profile.displayName}
+            size={20}
             customClassName="mr-2"
-            large
           />
         </TouchableOpacity>
         <Text className="font-bold text-lg">{`Hello ${profile.displayName}!`}</Text>

@@ -3,16 +3,14 @@ import { ActivityIndicator, Image, SafeAreaView, Text, TouchableOpacity, View } 
 
 import { Feather } from '@expo/vector-icons'
 import { type StackNavigationProp } from '@react-navigation/stack'
-import * as ImagePicker from 'expo-image-picker'
-import { updateProfile } from 'firebase/auth'
-import Toast from 'react-native-toast-message'
 
 import NavBarOption from '../components/NavBarOption'
+import ProfileAvatar from '../components/ProfileAvatar'
 import { type SettingsStack } from '../navigation/navigation'
-import { logoutUser, updateProfilePhoto } from '../redux/actions/userActions'
+import { logoutUser } from '../redux/actions/userActions'
 import { UserSelectors } from '../redux/slices/userSlice'
 import { useAppDispatch, useAppSelector } from '../redux/store/hooks'
-import { auth } from '../services/firebase'
+import { imagePicker } from '../util/userHelper'
 
 type SettingsScreenNavigationProp = StackNavigationProp<SettingsStack, 'Settings'>
 
@@ -36,60 +34,19 @@ const SettingsScreen = ({ navigation }: Props) => {
 
   const pickImage = React.useCallback(async () => {
     setIsPhotoLoading(true)
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [3, 3],
-      quality: 1,
-    })
-
-    if (!result.canceled && result.assets?.[0].type === 'image') {
-      const photoUrl = result.assets[0].uri
-
-      const user = auth.currentUser
-      if (user !== null) {
-        try {
-          const response = await dispatch(updateProfilePhoto({ userUid: profile.uid, photoUrl }))
-
-          if (response.meta.requestStatus === 'fulfilled') {
-            await updateProfile(user, {
-              photoURL: photoUrl,
-            })
-          }
-        } catch {
-          // do nothing
-        }
-      } else {
-        Toast.show({
-          type: 'error',
-          text1: 'Error!',
-          text2: 'Could not save profile photo. Please try again later.',
-        })
-      }
-    }
+    await imagePicker(profile.uid)
     setIsPhotoLoading(false)
-  }, [dispatch, profile, auth])
+  }, [profile])
 
-  const profileAvatar = React.useCallback(() => {
+  const pressableProfileAvatar = React.useCallback(() => {
     return (
       <View className="items-center mb-5 flex-start">
-        <TouchableOpacity
-          disabled={isPhotoLoading}
-          onPress={pickImage}
-          className="h-24 w-24 border items-center justify-center rounded-full"
-        >
-          {isPhotoLoading ? (
-            <ActivityIndicator size={'small'} />
-          ) : profile?.photoUrl !== null ? (
-            <Image
-              source={{ uri: profile.photoUrl }}
-              className="w-full h-full rounded-full"
-              resizeMode="stretch"
-            />
-          ) : (
-            <Feather name="user-plus" size={50} />
-          )}
-        </TouchableOpacity>
+        <ProfileAvatar
+          photoUrl={profile?.photoUrl ?? null}
+          displayName={profile.displayName}
+          size={24}
+          pressable
+        />
         <Text className="px-2 font-bold text-lg">{profile.displayName}</Text>
       </View>
     )
@@ -98,7 +55,7 @@ const SettingsScreen = ({ navigation }: Props) => {
   return (
     <SafeAreaView className="flex-1 m-5">
       <View className={'flex-1'}>
-        {profileAvatar()}
+        {pressableProfileAvatar()}
         <NavBarOption
           title="Personal information"
           onPress={() => {
