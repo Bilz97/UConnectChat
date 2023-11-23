@@ -43,7 +43,7 @@ export const getLastMessage = async (docRef: DocumentReference): Promise<Message
 }
 
 export const getInitials = (text?: string): string => {
-  if (!text) return ''
+  if (text == null || text?.length === 0) return ''
 
   const initials = text
     .split(' ')

@@ -162,6 +162,7 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
               <ProfileAvatar
                 photoUrl={profile?.photoUrl ?? null}
                 displayName={profile.displayName}
+                size={12}
                 customClassName="ml-2"
               />
             </View>
@@ -171,6 +172,7 @@ const ChatScreenModal = ({ navigation, route }: Props) => {
                 <ProfileAvatar
                   photoUrl={friendData?.photoUrl ?? null}
                   displayName={friendData.displayName}
+                  size={12}
                   customClassName="mr-2"
                 />
               )}
